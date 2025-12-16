@@ -28,3 +28,7 @@ frontend/dist
 
 # Coverage
 coverage
+
+git rm --cached backend/.env 2>/dev/null || true
+git rm --cached frontend/.env 2>/dev/null || true
+git status
