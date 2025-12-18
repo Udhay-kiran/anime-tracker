@@ -7,7 +7,6 @@
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
     "seed:anime": "node seed/seedAnime.js"
-
   },
   "keywords": [],
   "author": "",
@@ -15,6 +14,7 @@
   "type": "commonjs",
   "dependencies": {
     "bcrypt": "^6.0.0",
+    "bcryptjs": "^3.0.3",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",

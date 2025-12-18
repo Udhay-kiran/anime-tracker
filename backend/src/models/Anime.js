@@ -8,6 +8,7 @@ const AnimeSchema = new mongoose.Schema(
 
     // Display info
     synopsis: { type: String, default: "" },
+    description: { type: String, default: "" },
     posterUrl: { type: String, default: "" },
     bannerUrl: { type: String, default: "" },
 

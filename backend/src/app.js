@@ -1,27 +1,40 @@
 const express = require("express");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
+require("dotenv").config();
 
 const animeRoutes = require("./routes/animeRoutes");
-console.log("animeRoutes type:", typeof animeRoutes, animeRoutes);
-const app = express(); 
+const watchlistRoutes = require("./routes/watchlistRoutes");
+const authRoutes = require("./routes/authRoutes");
+const accountRoutes = require("./routes/accountRoutes");
+const favoriteRoutes = require("./routes/favoriteRoutes");
+const reviewRoutes = require("./routes/reviewRoutes");
 
-// Middleware
+const app = express();
+
+const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || "http://localhost:3000";
+
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: FRONTEND_ORIGIN,
     credentials: true,
+    methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
 app.use(express.json());
 app.use(cookieParser());
 
-// Routes
 app.use("/api/anime", animeRoutes);
+app.use("/api/watchlist", watchlistRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/account", accountRoutes);
+app.use("/api/favorites", favoriteRoutes);
+app.use("/api/reviews", reviewRoutes);
 
 app.get("/api/health", (req, res) => {
-  res.json({ ok: true, message: "Backend is running ✅" });
+  res.json({ ok: true, message: "Backend is running." });
 });
 
 module.exports = app;

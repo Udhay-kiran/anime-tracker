@@ -1,0 +1,111 @@
+"use client";
+
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+
+export default function RegisterPage() {
+  const router = useRouter();
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [dob, setDob] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const isValidEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!isValidEmail(email)) {
+      setError("Please enter a valid email address.");
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("http://localhost:4000/api/auth/register", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, email, password, dob }),
+      });
+      if (!res.ok) {
+        const msg =
+          res.status === 409 ? "Email or username already registered" : `Error ${res.status}`;
+        throw new Error(msg);
+      }
+      router.push("/account");
+    } catch (err) {
+      setError((err as Error).message || "Registration failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-[calc(100vh-64px)] bg-gradient-to-br from-zinc-50 via-white to-indigo-50 text-zinc-900">
+      <div className="mx-auto max-w-md px-6 py-12">
+        <h1 className="text-3xl font-semibold">Register</h1>
+        <p className="mt-2 text-sm text-zinc-600">
+          Create an account to save your watchlist and see insights.
+        </p>
+        <form onSubmit={submit} className="mt-6 flex flex-col gap-4">
+          <input
+            type="text"
+            required
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            placeholder="Username"
+            className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none"
+            autoComplete="username"
+          />
+          <input
+            type="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Email"
+            pattern="^[^\s@]+@[^\s@]+\.[^\s@]+$"
+            title="Enter a valid email (example@domain.com)"
+            className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none"
+            autoComplete="email"
+          />
+          <input
+            type="password"
+            required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Password (min 6 characters)"
+            className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none"
+            autoComplete="new-password"
+          />
+          <label className="text-sm font-medium text-zinc-700">
+            Date of birth
+            <input
+              type="date"
+              required
+              value={dob}
+              onChange={(e) => setDob(e.target.value)}
+              className="mt-1 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none"
+            />
+          </label>
+          {error && <p className="text-sm text-red-600">{error}</p>}
+          <button
+            type="submit"
+            disabled={loading}
+            className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 disabled:opacity-60"
+          >
+            {loading ? "Creating..." : "Register"}
+          </button>
+        </form>
+        <p className="mt-4 text-sm text-zinc-600">
+          Already have an account?{" "}
+          <Link className="font-semibold text-indigo-700" href="/login">
+            Login
+          </Link>
+        </p>
+      </div>
+    </div>
+  );
+}
