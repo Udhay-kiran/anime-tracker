@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import useInView from "./components/useInView";
 
 type Anime = {
   _id?: string;
@@ -54,6 +55,35 @@ const features = [
   },
 ];
 
+type QuickLookItem = {
+  icon: "pin" | "bolt" | "heart" | "note";
+  title: string;
+  description: string;
+};
+
+const quickLookItems: QuickLookItem[] = [
+  {
+    icon: "pin",
+    title: "Save to My List",
+    description: "Pin every show you want to return to in seconds.",
+  },
+  {
+    icon: "bolt",
+    title: "Mark status instantly",
+    description: "Planned, Watching, Completed, or Dropped with a single tap.",
+  },
+  {
+    icon: "heart",
+    title: "Favorites with one tap",
+    description: "Lift your comfort shows to the top of your list.",
+  },
+  {
+    icon: "note",
+    title: "Write reviews + ratings",
+    description: "Celebrate finales with quick notes and scores.",
+  },
+];
+
 const formatRating = (value?: number | null) => {
   if (value === null || value === undefined || Number.isNaN(value)) {
     return "N/A";
@@ -89,6 +119,16 @@ export default function HomePage() {
   });
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [formSuccess, setFormSuccess] = useState<string | null>(null);
+  const [heroReady, setHeroReady] = useState(false);
+
+  const { ref: featuresRef, inView: featuresInView } = useInView();
+  const { ref: highlightsRef, inView: highlightsInView } = useInView();
+  const { ref: contactRef, inView: contactInView } = useInView();
+  const { ref: quickLookRef, inView: quickLookInView } = useInView();
+
+  useEffect(() => {
+    setHeroReady(true);
+  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -213,70 +253,145 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-zinc-50 via-white to-indigo-50 text-zinc-900">
       <div className="mx-auto max-w-6xl px-6 py-12">
-        <section className="grid items-center gap-10 md:grid-cols-2">
-          <div className="space-y-6">
-            <div className="inline-flex rounded-full bg-indigo-100 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-indigo-700">
-              Welcome to Anilog
-            </div>
-            <div className="space-y-3">
-              <h1 className="text-4xl font-semibold leading-tight md:text-5xl">
-                Track everything you watch. Discover what comes next.
-              </h1>
-              <p className="text-base text-zinc-600 md:text-lg">
-                Anilog keeps your anime life organized with easy browsing, quick saves, and
-                a watchlist that stays in sync. Discover new releases, revisit favorites,
-                and see what to watch next.
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-3">
-              <Link
-                href="/browse"
-                className="rounded-full bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-indigo-700"
-              >
-                Browse
-              </Link>
-              <Link
-                href="/watchlist"
-                className="rounded-full border border-zinc-200 bg-white px-5 py-2.5 text-sm font-semibold text-zinc-800 shadow-sm transition hover:-translate-y-0.5 hover:border-indigo-400 hover:text-indigo-700"
-              >
-                My List
-              </Link>
-            </div>
-            <div className="flex flex-wrap gap-4 text-sm text-zinc-600">
-              <span className="rounded-full bg-white/80 px-3 py-1 font-semibold shadow-sm">
-                Built for anime fans
-              </span>
-              <span className="rounded-full bg-white/80 px-3 py-1 font-semibold shadow-sm">
-                Always up to date
-              </span>
-            </div>
-          </div>
+        <section className="relative overflow-hidden rounded-3xl border border-zinc-200 bg-white/70 p-8 shadow-lg backdrop-blur">
+          <div className="pointer-events-none absolute -left-16 -top-24 h-64 w-64 rounded-full bg-indigo-200/40 blur-3xl" />
+          <div className="pointer-events-none absolute right-[-4rem] top-6 h-56 w-56 rounded-full bg-violet-100/50 blur-3xl" />
+          <div className="pointer-events-none absolute bottom-[-3rem] left-10 h-52 w-52 rounded-full bg-indigo-100/50 blur-3xl" />
 
-          <div className="rounded-3xl border border-zinc-200 bg-white/80 p-6 shadow-lg backdrop-blur">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-indigo-600">
-                  Quick look
-                </p>
-                <h2 className="mt-1 text-2xl font-semibold text-zinc-900">
-                  Ready for your next watch
-                </h2>
+          <div className="relative grid items-center gap-10 md:grid-cols-2">
+            <div className="space-y-6">
+              <div
+                className={`inline-flex rounded-full bg-indigo-100 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-indigo-700 transition-all duration-700 ease-out motion-reduce:transform-none motion-reduce:transition-none ${
+                  heroReady ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3"
+                }`}
+                style={{ transitionDelay: "80ms" }}
+              >
+                Welcome to Anilog
               </div>
-              <span className="rounded-full bg-indigo-600 px-3 py-1 text-xs font-semibold text-white">
-                Start exploring
-              </span>
+              <div className="space-y-3">
+                <h1
+                  className={`text-4xl font-semibold leading-tight md:text-5xl transition-all duration-700 ease-out motion-reduce:transform-none motion-reduce:transition-none ${
+                    heroReady ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3"
+                  }`}
+                  style={{ transitionDelay: "140ms" }}
+                >
+                  Anime tracking that keeps you excited.
+                </h1>
+                <p
+                  className={`text-base text-zinc-600 md:text-lg transition-all duration-700 ease-out motion-reduce:transform-none motion-reduce:transition-none ${
+                    heroReady ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3"
+                  }`}
+                  style={{ transitionDelay: "200ms" }}
+                >
+                  Build a watchlist you can trust, celebrate every episode, and always know what to
+                  play next.
+                </p>
+              </div>
+              <div
+                className={`space-y-3 transition-all duration-700 ease-out motion-reduce:transform-none motion-reduce:transition-none ${
+                  heroReady ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+                }`}
+                style={{ transitionDelay: "260ms" }}
+              >
+                <div className="flex flex-wrap gap-3">
+                  <Link
+                    href="/browse"
+                    className="rounded-full bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md transition hover:-translate-y-0.5 hover:bg-indigo-700 motion-reduce:transform-none motion-reduce:transition-none"
+                  >
+                    Browse
+                  </Link>
+                  <Link
+                    href="/watchlist"
+                    className="rounded-full border border-zinc-200 bg-white px-5 py-2.5 text-sm font-semibold text-zinc-800 shadow-md transition hover:-translate-y-0.5 hover:border-indigo-400 hover:text-indigo-700 motion-reduce:transform-none motion-reduce:transition-none"
+                  >
+                    My List
+                  </Link>
+                </div>
+                <p className="text-sm font-semibold text-zinc-700">Sign in to save across devices</p>
+                <div
+                  className={`flex flex-wrap items-center gap-2 text-sm font-semibold text-zinc-700 transition-all duration-700 ease-out motion-reduce:transform-none motion-reduce:transition-none ${
+                    heroReady ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3"
+                  }`}
+                  style={{ transitionDelay: "320ms" }}
+                >
+                  <span>Track</span>
+                  <span className="text-zinc-400">&bull;</span>
+                  <span>Review</span>
+                  <span className="text-zinc-400">&bull;</span>
+                  <span>Save favorites</span>
+                </div>
+              </div>
+              <Link
+                href="#features"
+                className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-indigo-700 transition hover:translate-y-0.5 animate-soft-bounce motion-reduce:animate-none motion-reduce:transition-none"
+              >
+                <span>Scroll</span>
+                <svg
+                  className="h-3 w-3"
+                  viewBox="0 0 20 20"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M5 8.5 10 13.5 15 8.5" />
+                </svg>
+              </Link>
             </div>
-            <div className="mt-6 space-y-4 text-sm">
-              <StatBlock label="Your hub" value="Browse, track, and revisit favorites" />
-              <StatBlock label="Fresh picks" value="Top-rated, trending, and new releases" />
-              <StatBlock label="Watchlist" value="Planned / Watching / Completed" />
-              <StatBlock label="Details" value="Deep dives for every series you open" />
+
+            <div
+              ref={quickLookRef}
+              className={`rounded-3xl border border-zinc-200 bg-white/85 p-6 shadow-lg backdrop-blur transition-all duration-700 ease-out motion-reduce:transform-none motion-reduce:transition-none ${
+                quickLookInView
+                  ? "opacity-100 translate-y-0 scale-100"
+                  : "opacity-0 translate-y-3 scale-[0.98]"
+              }`}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-indigo-600">
+                    Quick look
+                  </p>
+                  <h2 className="mt-1 text-2xl font-semibold text-zinc-900">
+                    Your watchlist at a glance
+                  </h2>
+                  <p className="mt-1 text-sm text-zinc-600">
+                    A calm preview of everything you keep in Anilog.
+                  </p>
+                </div>
+                <span className="rounded-full bg-indigo-600 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-white">
+                  Live view
+                </span>
+              </div>
+              <div className="mt-6 space-y-3">
+                {quickLookItems.map((item, idx) => (
+                  <QuickLookRow
+                    key={item.title}
+                    icon={item.icon}
+                    title={item.title}
+                    description={item.description}
+                    className={`transition-all duration-700 ease-out motion-reduce:transform-none motion-reduce:transition-none ${
+                      quickLookInView
+                        ? "opacity-100 translate-y-0"
+                        : "opacity-0 translate-y-2"
+                    }`}
+                    style={{ transitionDelay: `${220 + idx * 90}ms` }}
+                  />
+                ))}
+              </div>
             </div>
           </div>
         </section>
 
         {/* FEATURES SECTION (not contact) */}
-        <section className="mt-14 scroll-mt-28 md:scroll-mt-32" id="features">
+        <section
+          ref={featuresRef}
+          className={`mt-14 scroll-mt-28 md:scroll-mt-32 transition-all duration-700 ease-out motion-reduce:transform-none motion-reduce:transition-none ${
+            featuresInView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+          }`}
+          id="features"
+        >
           <div className="mb-6 flex items-center justify-between">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-indigo-600">
@@ -309,7 +424,12 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="mt-14">
+        <section
+          ref={highlightsRef}
+          className={`mt-14 transition-all duration-700 ease-out motion-reduce:transform-none motion-reduce:transition-none ${
+            highlightsInView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+          }`}
+        >
           <div className="mb-6 flex items-center justify-between">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-indigo-600">
@@ -328,7 +448,13 @@ export default function HomePage() {
         </section>
 
         {/* REAL CONTACT SECTION (this is what #contact should point to) */}
-        <section className="mt-14 scroll-mt-28 md:scroll-mt-32" id="contact">
+        <section
+          ref={contactRef}
+          className={`mt-14 scroll-mt-28 md:scroll-mt-32 transition-all duration-700 ease-out motion-reduce:transform-none motion-reduce:transition-none ${
+            contactInView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+          }`}
+          id="contact"
+        >
           <div className="rounded-3xl border border-zinc-200 bg-white/90 p-6 shadow-lg backdrop-blur">
             <div className="mb-6 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
               <div>
@@ -352,13 +478,13 @@ export default function HomePage() {
             <form
               onSubmit={handleContactSubmit}
               className="grid gap-4 md:grid-cols-2"
-              suppressHydrationWarning
             >
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-zinc-800">Name</label>
                 <input
                   type="text"
                   value={formValues.name}
+                  suppressHydrationWarning
                   onChange={(e) =>
                     setFormValues((prev) => ({ ...prev, name: e.target.value }))
                   }
@@ -375,6 +501,7 @@ export default function HomePage() {
                 <input
                   type="email"
                   value={formValues.email}
+                  suppressHydrationWarning
                   onChange={(e) =>
                     setFormValues((prev) => ({ ...prev, email: e.target.value }))
                   }
@@ -390,6 +517,7 @@ export default function HomePage() {
                 <label className="text-sm font-semibold text-zinc-800">Message</label>
                 <textarea
                   value={formValues.message}
+                  suppressHydrationWarning
                   onChange={(e) =>
                     setFormValues((prev) => ({ ...prev, message: e.target.value }))
                   }
@@ -478,13 +606,95 @@ function HighlightColumn({
   );
 }
 
-function StatBlock({ label, value }: { label: string; value: string }) {
+function QuickLookRow({
+  icon,
+  title,
+  description,
+  className,
+  style,
+}: QuickLookItem & { className?: string; style?: CSSProperties }) {
   return (
-    <div className="flex items-center justify-between rounded-xl bg-zinc-100/60 px-4 py-3">
-      <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
-        {label}
-      </span>
-      <span className="text-sm font-semibold text-zinc-900">{value}</span>
+    <div
+      className={`flex items-start gap-3 rounded-2xl border border-zinc-100 bg-zinc-50/60 px-4 py-3 shadow-sm ${className ?? ""}`}
+      style={style}
+    >
+      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-50 text-indigo-700">
+        <QuickLookIcon type={icon} />
+      </div>
+      <div>
+        <p className="text-sm font-semibold text-zinc-900">{title}</p>
+        <p className="text-xs text-zinc-600">{description}</p>
+      </div>
     </div>
   );
+}
+
+function QuickLookIcon({ type }: { type: QuickLookItem["icon"] }) {
+  switch (type) {
+    case "pin":
+      return (
+        <svg
+          className="h-4 w-4"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.7"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M12 5v14" />
+          <path d="M7 10h10" />
+          <path d="M10 19h4" />
+        </svg>
+      );
+    case "bolt":
+      return (
+        <svg
+          className="h-4 w-4"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.7"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M13 3 6 14h6l-1 7 8-11h-6z" />
+        </svg>
+      );
+    case "heart":
+      return (
+        <svg
+          className="h-4 w-4"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.7"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M12 20.5 10.55 19.2C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 10.7L12 20.5z" />
+        </svg>
+      );
+    case "note":
+      return (
+        <svg
+          className="h-4 w-4"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.7"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M5 15.5 15.5 5 19 8.5 8.5 19H5z" />
+          <path d="M12 7.5 16.5 12" />
+        </svg>
+      );
+    default:
+      return null;
+  }
 }
