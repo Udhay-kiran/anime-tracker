@@ -243,16 +243,59 @@ export default function HomePage() {
   const heroReveal = mounted && heroInView;
 
   return (
-    <main className="min-h-screen text-white">
-      {/* HERO */}
-      <section ref={heroRef} className="relative mx-auto w-full max-w-5xl px-3 pt-8 md:pt-10 lg:pt-12">
-        <div className="relative overflow-hidden rounded-[28px] border border-white/10 bg-white/5 shadow-[0_32px_100px_rgba(0,0,0,0.55)] ring-1 ring-white/10 backdrop-blur-2xl">
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_12%,rgba(99,102,241,0.22),transparent_50%),radial-gradient(circle_at_86%_22%,rgba(168,85,247,0.16),transparent_46%),radial-gradient(circle_at_55%_95%,rgba(56,189,248,0.10),transparent_50%)]" />
-          <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_bottom,rgba(255,255,255,0.04),transparent_32%,rgba(0,0,0,0.18))]" />
-          <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_bottom,transparent,rgba(99,102,241,0.16),transparent)] bg-[length:100%_7px] opacity-[0.2] animate-[scan_8s_linear_infinite]" />
-          <div className="pointer-events-none absolute inset-[8px] rounded-[22px] border border-white/10" />
+    <main
+      className="relative min-h-screen overflow-hidden text-white"
+      style={{
+        backgroundImage:
+          "linear-gradient(145deg, rgba(69,38,160,0.25), rgba(20,14,62,0.92) 38%, rgba(7,7,20,0.96)), url('/bg/anilog-bg.webp')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      }}
+    >
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(120,87,255,0.18),transparent_32%),radial-gradient(circle_at_82%_26%,rgba(255,88,248,0.14),transparent_38%),radial-gradient(circle_at_50%_80%,rgba(72,190,255,0.12),transparent_45%)] blur-3xl" />
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),transparent_32%,rgba(255,255,255,0.02)),radial-gradient(circle_at_50%_120%,rgba(92,50,168,0.15),transparent_40%)]" />
 
-          <div className="relative grid gap-8 px-5 py-10 lg:grid-cols-2 lg:gap-10 lg:px-10">
+      <header className="relative z-10 mx-auto w-full max-w-6xl px-4 pt-6">
+        <nav className="flex items-center justify-between rounded-full border border-white/10 bg-white/5 px-4 py-3 shadow-[0_20px_80px_rgba(0,0,0,0.35)] backdrop-blur-lg">
+          <div className="flex items-center gap-6">
+            <Link
+              href="/"
+              className="rounded-full bg-white/10 px-4 py-2 text-sm font-semibold tracking-tight text-white shadow-[0_10px_35px_rgba(99,102,241,0.45)] ring-1 ring-white/20"
+            >
+              Anilog
+            </Link>
+            <div className="hidden items-center gap-3 text-sm font-semibold text-white/75 md:flex">
+              <Link href="/" className="rounded-full px-3 py-2 transition hover:text-white">
+                Home
+              </Link>
+              <Link href="/browse" className="rounded-full px-3 py-2 transition hover:text-white">
+                Browse
+              </Link>
+              <Link href="/my-list" className="rounded-full px-3 py-2 transition hover:text-white">
+                My List
+              </Link>
+              <Link href="/contact" className="rounded-full px-3 py-2 transition hover:text-white">
+                Contact
+              </Link>
+            </div>
+          </div>
+          <Link
+            href="/account"
+            className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white/85 backdrop-blur hover:bg-white/10"
+          >
+            My Account
+            <span aria-hidden className="text-xs">v</span>
+          </Link>
+        </nav>
+      </header>
+      {/* HERO */}
+      <section ref={heroRef} className="relative z-10 mx-auto w-full max-w-6xl px-4 pb-8 pt-10 md:pb-12 md:pt-12 lg:pt-16">
+        <div className="relative overflow-hidden rounded-[38px] border border-white/15 bg-gradient-to-br from-white/10 via-white/5 to-[#24104b]/60 shadow-[0_50px_140px_rgba(0,0,0,0.65)] ring-1 ring-indigo-400/25 backdrop-blur-2xl">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_12%,rgba(120,97,255,0.28),transparent_45%),radial-gradient(circle_at_86%_22%,rgba(255,117,241,0.22),transparent_48%),radial-gradient(circle_at_55%_95%,rgba(75,190,255,0.18),transparent_48%)]" />
+          <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(130deg,rgba(255,255,255,0.08),transparent_35%,rgba(99,102,241,0.12)_70%,transparent)] opacity-70" />
+          <div className="pointer-events-none absolute inset-[10px] rounded-[30px] border border-white/10 ring-1 ring-white/10" />
+
+          <div className="relative grid gap-10 px-6 py-12 lg:grid-cols-2 lg:gap-14 lg:px-14">
             {/* Left */}
             <div
               className={cx(
@@ -260,15 +303,15 @@ export default function HomePage() {
                 heroReveal ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3",
               )}
             >
-              <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-[11px] tracking-[0.18em] text-white/80">
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-[11px] tracking-[0.2em] text-white/90">
                 WELCOME TO ANILOG
               </div>
 
               <div className="space-y-4">
-                <h1 className="max-w-xl text-4xl font-semibold leading-tight tracking-tight sm:text-5xl lg:text-5xl">
+                <h1 className="max-w-2xl text-5xl font-semibold leading-tight tracking-tight sm:text-6xl">
                   Anime tracking that keeps you excited.
                 </h1>
-                <p className="max-w-xl text-white/75">
+                <p className="max-w-xl text-white/80">
                   Build a watchlist you trust, celebrate every episode, and always know what to queue next.
                 </p>
               </div>
@@ -277,22 +320,22 @@ export default function HomePage() {
                 <div className="flex flex-wrap items-center gap-3">
                   <Link
                     href="/browse"
-                    className="rounded-full bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-[0_10px_26px_rgba(99,102,241,0.3)] transition hover:-translate-y-0.5 hover:bg-indigo-500"
+                    className="rounded-full bg-gradient-to-r from-[#7c6bff] to-[#5a37ff] px-7 py-3.5 text-sm font-semibold text-white shadow-[0_20px_50px_rgba(109,76,255,0.45)] transition hover:-translate-y-0.5"
                   >
                     Browse
                   </Link>
                   <Link
                     href="/my-list"
-                    className="rounded-full border border-white/15 bg-white/5 px-5 py-2.5 text-sm font-semibold text-white/90 backdrop-blur transition hover:-translate-y-0.5 hover:bg-white/10"
+                    className="rounded-full border border-white/20 bg-white/10 px-7 py-3.5 text-sm font-semibold text-white/90 backdrop-blur transition hover:-translate-y-0.5 hover:bg-white/15"
                   >
                     My List
                   </Link>
                 </div>
                 <div className="text-sm text-white/70">
-                  <div className="font-semibold text-white/85">Sign in to save across devices</div>
-                  <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-white/60">
+                  <div className="font-semibold text-white/90">Sign in to save across devices</div>
+                  <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-white/70">
                     {["Track", "Review", "Favorites"].map((label) => (
-                      <span key={label} className="rounded-full border border-white/10 bg-white/5 px-3 py-1">
+                      <span key={label} className="rounded-full border border-white/10 bg-white/10 px-3 py-1">
                         {label}
                       </span>
                     ))}
@@ -300,36 +343,25 @@ export default function HomePage() {
                 </div>
               </div>
 
-              <button
-                onClick={() => scrollToId("features")}
-                className="inline-flex items-center gap-2 text-xs tracking-[0.22em] text-indigo-300/80 transition hover:text-indigo-200"
-              >
-                SCROLL
-                <svg className="h-3 w-3" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.7">
-                  <path d="M4.5 6.5 8 10l3.5-3.5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </button>
-
               {/* Quick look */}
-              <div className="mt-2 w-full max-w-[480px] rounded-2xl border border-white/10 bg-white/5 p-3.5 shadow-[0_14px_44px_rgba(0,0,0,0.35)] backdrop-blur-xl">
-                <div className="flex items-center justify-between">
-                  <div className="text-[11px] font-semibold tracking-[0.22em] text-white/70">QUICK LOOK</div>
-                  <div className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] text-white/80">
-                    Live preview
-                  </div>
+              <div className="mt-4 w-full max-w-[620px] rounded-3xl border border-white/10 bg-[linear-gradient(120deg,rgba(58,30,120,0.6),rgba(34,21,76,0.85),rgba(18,16,48,0.9))] p-5 shadow-[0_30px_80px_rgba(0,0,0,0.55)] backdrop-blur-2xl">
+                <div className="flex items-center justify-between text-[11px] font-semibold tracking-[0.22em] text-white/80">
+                  <span>QUICK LOOK</span>
+                  <span className="rounded-full border border-white/10 bg-white/10 px-3 py-1 text-white/85">Live</span>
                 </div>
 
-                <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                <div className="mt-5 grid gap-3 sm:grid-cols-3">
                   {quickLookItems.map((item) => (
-                    <div key={item.title} className="rounded-xl border border-white/10 bg-black/25 p-3 shadow-lg backdrop-blur-md">
-                      <div className="flex items-start gap-3">
-                        <div className="grid h-9 w-9 place-items-center rounded-xl border border-white/10 bg-white/10 text-white/80">
-                          <QuickLookIcon type={item.icon} />
-                        </div>
-                        <div>
-                          <div className="text-sm font-semibold text-white/90">{item.title}</div>
-                          <div className="mt-1 text-xs leading-relaxed text-white/65">{item.description}</div>
-                        </div>
+                    <div
+                      key={item.title}
+                      className="flex items-start gap-3 rounded-2xl border border-white/10 bg-white/5 p-3.5 shadow-[0_18px_55px_rgba(0,0,0,0.35)] backdrop-blur-xl"
+                    >
+                      <div className="grid h-11 w-11 place-items-center rounded-2xl border border-white/10 bg-white/10 text-white">
+                        <QuickLookIcon type={item.icon} />
+                      </div>
+                      <div>
+                        <div className="text-sm font-semibold text-white">{item.title}</div>
+                        <div className="mt-1 text-xs leading-relaxed text-white/70">{item.description}</div>
                       </div>
                     </div>
                   ))}
@@ -351,7 +383,7 @@ export default function HomePage() {
       </section>
 
       {/* FEATURES */}
-      <section id="features" ref={featuresRef} className="mx-auto w-full max-w-5xl px-3 pt-10 md:pt-12">
+      <section id="features" ref={featuresRef} className="mx-auto w-full max-w-6xl px-4 pt-10 md:pt-14">
         <div className="flex items-end justify-between gap-6">
           <div>
             <div className="text-[11px] font-semibold tracking-[0.22em] text-indigo-300/70">FEATURES</div>
@@ -367,7 +399,7 @@ export default function HomePage() {
             <div
               key={item.title}
               className={cx(
-                "rounded-2xl border border-white/10 bg-black/20 p-5 shadow-[0_18px_55px_rgba(0,0,0,0.35)] backdrop-blur-xl transition-all duration-700",
+                "rounded-2xl border border-white/10 bg-gradient-to-br from-white/10 via-white/5 to-[#140d36]/60 p-5 shadow-[0_22px_60px_rgba(0,0,0,0.45)] ring-1 ring-indigo-400/10 backdrop-blur-xl transition-all duration-700",
                 featuresInView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3",
               )}
               style={{ transitionDelay: `${80 + idx * 70}ms` }}
@@ -387,7 +419,7 @@ export default function HomePage() {
       </section>
 
       {/* HIGHLIGHTS */}
-      <section ref={highlightsRef} className="mx-auto w-full max-w-5xl px-3 pb-20 pt-12">
+      <section ref={highlightsRef} className="mx-auto w-full max-w-6xl px-4 pb-20 pt-14">
         <div className="flex items-end justify-between gap-6">
           <div>
             <div className="text-[11px] font-semibold tracking-[0.22em] text-indigo-300/70">HIGHLIGHTS</div>
@@ -418,7 +450,7 @@ export default function HomePage() {
                   <div
                     key={title}
                     className={cx(
-                      "rounded-2xl border border-white/10 bg-black/20 p-4 shadow-[0_18px_55px_rgba(0,0,0,0.35)] backdrop-blur-xl transition-all duration-700",
+                      "rounded-2xl border border-white/10 bg-gradient-to-br from-white/10 via-white/5 to-[#141036]/70 p-4 shadow-[0_22px_60px_rgba(0,0,0,0.45)] ring-1 ring-indigo-400/10 backdrop-blur-xl transition-all duration-700",
                       highlightsInView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3",
                     )}
                     style={{ transitionDelay: `${80 + idx * 70}ms` }}
@@ -611,29 +643,29 @@ function PosterImage({ base, alt, priority }: { base: string; alt: string; prior
 
 function HeroPosterCollage({ posters, show }: { posters: HeroPoster[]; show: boolean }) {
   return (
-    <div className={cx("relative h-[480px] w-full max-w-[620px] perspective-[1500px]", show ? "scale-100" : "scale-[0.98]")}>
-      <div className="absolute -inset-12 rounded-[56px] bg-[radial-gradient(circle_at_22%_20%,rgba(99,102,241,0.28),transparent_42%),radial-gradient(circle_at_80%_35%,rgba(168,85,247,0.22),transparent_45%),radial-gradient(circle_at_50%_78%,rgba(56,189,248,0.18),transparent_45%)] blur-3xl" />
-      <div className="relative h-full w-full transform-gpu [transform:perspective(1500px)_rotateY(-12deg)_rotateX(2deg)_rotateZ(6deg)]">
-        <div className="absolute inset-0 rounded-[38px] border border-white/10 bg-white/5 ring-1 ring-indigo-300/20 shadow-[0_34px_96px_rgba(0,0,0,0.6)] backdrop-blur-xl" />
-        <div className="absolute inset-3 rounded-[34px] border border-white/10 bg-gradient-to-br from-white/10 via-transparent to-indigo-400/18 ring-1 ring-white/10" />
-        <div className="absolute inset-6 rounded-[30px] border border-indigo-400/35 bg-black/40 ring-1 ring-indigo-400/25 shadow-inner" />
-        <div className="absolute inset-9 rounded-[26px] bg-[radial-gradient(circle_at_30%_25%,rgba(255,255,255,0.14),transparent_44%),radial-gradient(circle_at_78%_70%,rgba(99,102,241,0.26),transparent_44%)] ring-1 ring-white/5" />
-        <div className="pointer-events-none absolute inset-0 rounded-[38px] bg-[linear-gradient(120deg,rgba(255,255,255,0.3),rgba(255,255,255,0.12)_42%,rgba(99,102,241,0.22)_70%,transparent)] opacity-75" />
-        <div className="pointer-events-none absolute inset-0 rounded-[38px] bg-[linear-gradient(135deg,rgba(255,255,255,0.18),transparent_55%)] mix-blend-screen" />
+    <div className={cx("relative h-[560px] w-full max-w-[720px] perspective-[1600px]", show ? "scale-100" : "scale-[0.98]")}>
+      <div className="absolute -inset-14 rounded-[64px] bg-[radial-gradient(circle_at_22%_20%,rgba(99,102,241,0.28),transparent_42%),radial-gradient(circle_at_80%_35%,rgba(168,85,247,0.22),transparent_45%),radial-gradient(circle_at_50%_78%,rgba(56,189,248,0.18),transparent_45%)] blur-3xl" />
+      <div className="relative h-full w-full transform-gpu [transform:perspective(1600px)_rotateY(-12deg)_rotateX(2deg)_rotateZ(6deg)]">
+      <div className="absolute inset-0 rounded-[42px] border border-white/10 bg-white/5 ring-1 ring-indigo-300/20 shadow-[0_40px_110px_rgba(0,0,0,0.65)] backdrop-blur-xl" />
+        <div className="absolute inset-3 rounded-[38px] border border-white/10 bg-gradient-to-br from-white/10 via-transparent to-indigo-400/18 ring-1 ring-white/10" />
+        <div className="absolute inset-6 rounded-[34px] border border-indigo-400/35 bg-black/40 ring-1 ring-indigo-400/25 shadow-inner" />
+        <div className="absolute inset-9 rounded-[30px] bg-[radial-gradient(circle_at_30%_25%,rgba(255,255,255,0.14),transparent_44%),radial-gradient(circle_at_78%_70%,rgba(99,102,241,0.26),transparent_44%)] ring-1 ring-white/5" />
+        <div className="pointer-events-none absolute inset-0 rounded-[42px] bg-[linear-gradient(120deg,rgba(255,255,255,0.3),rgba(255,255,255,0.12)_42%,rgba(99,102,241,0.22)_70%,transparent)] opacity-75" />
+        <div className="pointer-events-none absolute inset-0 rounded-[42px] bg-[linear-gradient(135deg,rgba(255,255,255,0.18),transparent_55%)] mix-blend-screen" />
 
-        <div className="absolute inset-9 overflow-visible rounded-[24px]">
+        <div className="absolute inset-10 overflow-visible rounded-[28px]">
           {posters.map((poster, idx) => (
             <div
               key={poster.base}
               className={cx(
-                "absolute aspect-[2/3] w-[100px] sm:w-[130px] md:w-[160px] lg:w-[190px] overflow-hidden rounded-2xl border border-white/15 bg-white/5 shadow-[0_26px_76px_rgba(0,0,0,0.62)] ring-1 ring-indigo-300/25 backdrop-blur-md transition-transform duration-500",
+                "absolute aspect-[2/3] w-[120px] sm:w-[150px] md:w-[180px] lg:w-[220px] overflow-hidden rounded-2xl border border-white/15 bg-white/5 shadow-[0_32px_90px_rgba(0,0,0,0.62)] ring-1 ring-indigo-300/25 backdrop-blur-md transition-transform duration-500",
                 poster.className,
               )}
               style={{ transitionDelay: `${120 + idx * 40}ms` }}
             >
               <PosterImage base={poster.base} alt={`${poster.base} poster`} priority={idx === 0} />
               <div className="pointer-events-none absolute inset-0 rounded-2xl bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.22),transparent_40%),linear-gradient(135deg,rgba(255,255,255,0.08),transparent_55%)] mix-blend-screen" />
-              <div className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-white/10" />
+      <div className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-white/10" />
             </div>
           ))}
         </div>
