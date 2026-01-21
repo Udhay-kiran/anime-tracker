@@ -78,12 +78,12 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-zinc-200 bg-white/85 backdrop-blur-md">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
+    <nav className="fixed top-0 w-full z-50 bg-black/40 backdrop-blur-md border-b border-white/10">
+      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-2">
         <div className="flex items-center gap-5">
           <Link
             href="/"
-            className="text-base font-semibold text-indigo-700 transition hover:text-indigo-800"
+            className="text-base font-semibold tracking-tight text-white transition hover:drop-shadow-[0_0_12px_rgba(99,102,241,0.45)]"
           >
             Anilog
           </Link>
@@ -93,7 +93,7 @@ export default function Navbar() {
             <NavLink href="/watchlist" label="My List" />
             <Link
               href="/#contact"
-              className="rounded-lg px-3 py-2 text-zinc-700 transition hover:bg-zinc-100 hover:text-indigo-700"
+              className="rounded-lg px-3 py-2 text-white/80 transition hover:text-white hover:drop-shadow-[0_0_10px_rgba(99,102,241,0.35)]"
             >
               Contact
             </Link>
@@ -104,7 +104,7 @@ export default function Navbar() {
           <button
             type="button"
             onClick={() => setOpen((prev) => !prev)}
-            className="flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-4 py-2 text-sm font-semibold text-zinc-800 shadow-sm transition hover:border-indigo-400 hover:text-indigo-700"
+            className="flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold text-white/85 shadow-sm transition hover:border-white/30 hover:text-white hover:drop-shadow-[0_0_10px_rgba(99,102,241,0.35)]"
           >
             My Account
             <span className={`text-xs transition ${open ? "rotate-180" : ""}`}>v</span>
@@ -161,10 +161,10 @@ function NavLink({ href, label }: { href: string; label: string }) {
   return (
     <Link
       href={href}
-      className={`rounded-lg px-3 py-2 ${
+      className={`rounded-lg px-3 py-2 transition ${
         isActive
-          ? "bg-indigo-50 text-indigo-700"
-          : "text-zinc-700 transition hover:bg-zinc-100 hover:text-indigo-700"
+          ? "bg-white/10 text-white font-semibold"
+          : "text-white/80 hover:text-white hover:drop-shadow-[0_0_10px_rgba(99,102,241,0.35)]"
       }`}
     >
       {label}

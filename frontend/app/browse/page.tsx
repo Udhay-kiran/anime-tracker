@@ -457,33 +457,33 @@ export default function BrowsePage() {
   ]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-zinc-50 via-white to-indigo-50 text-zinc-900">
+    <div className="min-h-screen text-white">
       <div className="mx-auto max-w-6xl px-6 py-12">
         <header className="mb-8 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-indigo-600">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-indigo-300">
               Discover
             </p>
             <h1 className="text-3xl font-semibold md:text-4xl">Browse anime</h1>
-            <p className="mt-2 max-w-2xl text-sm text-zinc-600 md:text-base">
+            <p className="mt-2 max-w-2xl text-sm text-white/80 md:text-base">
               Filter by genre, status, and year while sorting by rating or title. Data
               loads straight from the Express API at http://localhost:4000/api/anime.
             </p>
           </div>
-          <div className="flex flex-col items-start gap-2 text-sm font-semibold text-indigo-700 md:items-end">
-            <div className="rounded-full bg-white/80 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-zinc-600 shadow-sm">
+          <div className="flex flex-col items-start gap-2 text-sm font-semibold text-white/85 md:items-end">
+            <div className="rounded-full border border-white/15 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white/80 shadow-sm backdrop-blur">
               {filtered.length} results
             </div>
-            <Link href="/#contact" className="transition hover:text-indigo-800">
+            <Link href="/#contact" className="transition hover:text-white">
               Contact us
             </Link>
           </div>
         </header>
 
-        <div className="rounded-2xl border border-zinc-200 bg-white/80 p-5 shadow-sm backdrop-blur-sm">
+        <div className="rounded-2xl border border-white/10 bg-white/10 p-5 shadow-lg backdrop-blur">
           <div className="grid gap-3 md:grid-cols-3">
             <div className="md:col-span-2">
-              <label className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500">
+              <label className="text-xs font-semibold uppercase tracking-[0.2em] text-white/70">
                 Search
               </label>
               <input
@@ -491,17 +491,17 @@ export default function BrowsePage() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search by title..."
-                className="mt-2 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none"
+                className="mt-2 w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white shadow-sm backdrop-blur focus:border-indigo-400 focus:outline-none"
               />
             </div>
             <div>
-              <label className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500">
+              <label className="text-xs font-semibold uppercase tracking-[0.2em] text-white/70">
                 Sort by
               </label>
               <select
                 value={sort}
                 onChange={(e) => setSort(e.target.value)}
-                className="mt-2 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none"
+                className="mt-2 w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white shadow-sm backdrop-blur focus:border-indigo-400 focus:outline-none"
               >
                 <option value="rating_desc">Rating (high to low)</option>
                 <option value="year_desc">Year (newest first)</option>
@@ -512,13 +512,13 @@ export default function BrowsePage() {
 
           <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <div>
-              <label className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500">
+              <label className="text-xs font-semibold uppercase tracking-[0.2em] text-white/70">
                 Genre
               </label>
               <select
                 value={genre}
                 onChange={(e) => setGenre(e.target.value)}
-                className="mt-2 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none"
+                className="mt-2 w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white shadow-sm backdrop-blur focus:border-indigo-400 focus:outline-none"
               >
                 <option value="all">All</option>
                 {genreOptions.map((g) => (
@@ -529,13 +529,13 @@ export default function BrowsePage() {
               </select>
             </div>
             <div>
-              <label className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500">
+              <label className="text-xs font-semibold uppercase tracking-[0.2em] text-white/70">
                 Status
               </label>
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="mt-2 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none"
+                className="mt-2 w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white shadow-sm backdrop-blur focus:border-indigo-400 focus:outline-none"
               >
                 <option value="all">All</option>
                 <option value="airing">Airing</option>
@@ -545,13 +545,13 @@ export default function BrowsePage() {
               </select>
             </div>
             <div>
-              <label className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500">
+              <label className="text-xs font-semibold uppercase tracking-[0.2em] text-white/70">
                 Year
               </label>
               <select
                 value={year}
                 onChange={(e) => setYear(e.target.value)}
-                className="mt-2 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none"
+                className="mt-2 w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white shadow-sm backdrop-blur focus:border-indigo-400 focus:outline-none"
               >
                 <option value="all">All</option>
                 {yearOptions.map((y) => (
@@ -562,7 +562,7 @@ export default function BrowsePage() {
               </select>
             </div>
             <div>
-              <label className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500">
+              <label className="text-xs font-semibold uppercase tracking-[0.2em] text-white/70">
                 Quick actions
               </label>
               <div className="mt-2 flex gap-2">
@@ -575,7 +575,7 @@ export default function BrowsePage() {
                     setYear("all");
                     setSort("rating_desc");
                   }}
-                  className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm font-semibold text-zinc-800 transition hover:border-indigo-400 hover:text-indigo-700"
+                  className="w-full rounded-lg border border-white/20 px-3 py-2 text-sm font-semibold text-white transition hover:border-indigo-300 hover:text-white"
                 >
                   Reset filters
                 </button>

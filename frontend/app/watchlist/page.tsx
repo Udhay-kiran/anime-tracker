@@ -226,19 +226,19 @@ const canLoadMore = visibleCount < filteredItems.length;
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-zinc-50 via-white to-indigo-50 text-zinc-900">
+    <div className="min-h-screen text-white">
       <div className="mx-auto max-w-6xl px-6 py-12">
         <header className="flex flex-col gap-2">
-          <p className="text-sm font-medium uppercase tracking-[0.2em] text-indigo-600">
+          <p className="text-sm font-medium uppercase tracking-[0.2em] text-indigo-300">
             My List
           </p>
-          <h1 className="text-3xl font-semibold text-zinc-900 md:text-4xl">Your watchlist</h1>
-          <p className="max-w-2xl text-sm text-zinc-600 md:text-base">
+          <h1 className="text-3xl font-semibold md:text-4xl">Your watchlist</h1>
+          <p className="max-w-2xl text-sm text-white/80 md:text-base">
             Organize what to watch next, keep up with ongoing shows, and surface your favorites.
           </p>
           <Link
             href="/#contact"
-            className="text-sm font-semibold text-indigo-700 transition hover:text-indigo-800"
+            className="text-sm font-semibold text-white/85 transition hover:text-white"
           >
             Contact us
           </Link>
@@ -254,8 +254,8 @@ const canLoadMore = visibleCount < filteredItems.length;
                 onClick={() => setActiveTab(tab.key)}
                 className={`flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 ${
                   isActive
-                    ? "border-indigo-600 bg-indigo-600 text-white shadow-sm"
-                    : "border-zinc-200 bg-white text-zinc-700 hover:border-indigo-300 hover:text-indigo-700"
+                    ? "border-indigo-500/80 bg-indigo-600 text-white shadow-sm"
+                    : "border-white/20 bg-white/10 text-white hover:border-indigo-300 hover:text-white"
                 }`}
               >
                 <span>{tab.label}</span>
@@ -279,7 +279,7 @@ const canLoadMore = visibleCount < filteredItems.length;
               {[...Array(8)].map((_, idx) => (
                 <div
                   key={idx}
-                  className="rounded-xl border border-zinc-200 bg-white/80 p-5 shadow-sm"
+                  className="rounded-xl border border-white/15 bg-white/10 p-5 shadow-sm backdrop-blur"
                 >
                   <div className="mb-4 flex items-start justify-between gap-3">
                     <div className="h-5 w-2/3 animate-pulse rounded bg-zinc-200" />
@@ -295,11 +295,11 @@ const canLoadMore = visibleCount < filteredItems.length;
               ))}
             </div>
           ) : error ? (
-            <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+            <div className="rounded-xl border border-red-200/60 bg-red-500/10 px-4 py-3 text-sm text-red-200">
               {error}
             </div>
           ) : filteredItems.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-zinc-200 bg-white/80 px-4 py-6 text-sm text-zinc-700">
+            <div className="rounded-xl border border-dashed border-white/20 bg-white/10 px-4 py-6 text-sm text-white/80 backdrop-blur">
               Nothing here yet. Add shows to your list and mark them as favorites or set their
               status to see them appear under each tab.
             </div>
@@ -322,7 +322,7 @@ const canLoadMore = visibleCount < filteredItems.length;
                   <button
                     type="button"
                     onClick={() => setVisibleCount((prev) => prev + CARDS_PER_BATCH)}
-                    className="rounded-full border border-zinc-200 bg-white px-5 py-2 text-sm font-semibold text-zinc-800 shadow-sm transition hover:-translate-y-0.5 hover:border-indigo-300 hover:text-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2"
+                    className="rounded-full border border-white/20 bg-white/10 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:border-indigo-300 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2"
                   >
                     Load more
                   </button>
@@ -350,16 +350,16 @@ function WatchlistCard({
   onRemove: () => void;
 }) {
   return (
-    <article className="group relative flex h-full flex-col rounded-xl border border-zinc-200 bg-white/90 p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-lg hover:ring-1 hover:ring-indigo-100">
+    <article className="group relative flex h-full flex-col rounded-xl border border-white/15 bg-white/10 p-5 shadow-lg backdrop-blur transition hover:-translate-y-1 hover:shadow-2xl hover:ring-1 hover:ring-indigo-400/30">
       <div className="flex items-start gap-3">
         <div className="flex-1">
           <Link
             href={`/anime/${item.anime.slug}`}
-            className="line-clamp-2 text-lg font-semibold text-zinc-900 transition hover:text-indigo-600"
+            className="line-clamp-2 text-lg font-semibold text-white transition hover:text-indigo-200"
           >
             {item.anime.title}
           </Link>
-          <p className="mt-2 line-clamp-3 text-sm leading-6 text-zinc-700">{item.anime.synopsis}</p>
+          <p className="mt-2 line-clamp-3 text-sm leading-6 text-white/80">{item.anime.synopsis}</p>
         </div>
         {item.status === "completed" ? (
           <div
@@ -377,8 +377,8 @@ function WatchlistCard({
               disabled={mutating}
               className={`flex items-center justify-center rounded-full border px-4 py-2 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 ${
                 item.favorite
-                  ? "border-rose-200 bg-rose-50 text-rose-600"
-                  : "border-zinc-200 bg-white text-zinc-600 hover:border-rose-200 hover:text-rose-600"
+                  ? "border-rose-300/80 bg-rose-500/20 text-rose-100"
+                  : "border-white/30 bg-white/10 text-white hover:border-rose-300 hover:text-rose-100"
               } ${mutating ? "opacity-60" : ""}`}
             >
               <HeartIcon filled={item.favorite} />
@@ -387,21 +387,21 @@ function WatchlistCard({
         ) : null}
       </div>
 
-      <div className="mt-4 flex flex-wrap items-center gap-2 text-xs font-semibold text-zinc-600">
-        <span className="rounded-full bg-indigo-50 px-3 py-1 text-indigo-700">
+      <div className="mt-4 flex flex-wrap items-center gap-2 text-xs font-semibold text-white/80">
+        <span className="rounded-full bg-indigo-500/20 px-3 py-1 text-indigo-100">
           {STATUS_BADGES[item.status] ?? item.status}
         </span>
-        <span className="rounded-full bg-zinc-100 px-3 py-1 text-zinc-700">
+        <span className="rounded-full bg-white/10 px-3 py-1 text-white/80">
           {item.anime.releaseYear}
         </span>
-        <span className="rounded-full bg-zinc-100 px-3 py-1 text-zinc-700">
+        <span className="rounded-full bg-white/10 px-3 py-1 text-white/80">
           Rating: {formatRating(item.anime.avgRating)}
         </span>
       </div>
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
         <select
-          className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-xs font-semibold text-zinc-800 shadow-sm transition focus:border-indigo-500 focus:outline-none disabled:opacity-60"
+          className="rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-xs font-semibold text-white shadow-sm transition focus:border-indigo-400 focus:outline-none disabled:opacity-60"
           value={item.status}
           onChange={(e) => onStatusChange(e.target.value)}
           disabled={mutating}
@@ -416,7 +416,7 @@ function WatchlistCard({
           type="button"
           onClick={onRemove}
           disabled={mutating}
-          className="rounded-lg border border-red-200 px-3 py-2 text-xs font-semibold text-red-600 transition hover:bg-red-50 disabled:opacity-60"
+          className="rounded-lg border border-red-300/50 bg-red-500/10 px-3 py-2 text-xs font-semibold text-red-100 transition hover:bg-red-500/20 disabled:opacity-60"
         >
           Remove
         </button>

@@ -25,13 +25,21 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} flex min-h-screen flex-col bg-zinc-50 text-zinc-900 antialiased`}
+        suppressHydrationWarning
+        className={`${geistSans.variable} ${geistMono.variable} relative flex min-h-screen flex-col text-zinc-100 antialiased`}
       >
-        <Navbar />
-        <main className="flex-1">{children}</main>
-        <Footer />
+        <div
+          className="fixed inset-0 -z-20 bg-cover bg-center bg-fixed"
+          style={{ backgroundImage: "url('/bg/anilog-bg.webp')" }}
+        />
+        <div className="fixed inset-0 -z-10 bg-black/70" />
+        <div className="relative z-10 min-h-screen bg-gradient-to-br from-[#0b1022]/70 via-[#0f1731]/70 to-[#111827]/70">
+          <Navbar />
+          <main className="flex-1 pt-16">{children}</main>
+          <Footer />
+        </div>
       </body>
     </html>
   );
