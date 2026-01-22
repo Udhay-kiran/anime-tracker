@@ -257,28 +257,26 @@ export default function HomePage() {
 
       {/* HERO */}
       <section
-        ref={heroRef}
-        className="relative z-10 mx-auto w-full max-w-[1240px] px-6 pt-6"
-        style={{ minHeight: `calc(100svh - ${NAV_OFFSET_PX}px)` }}
-      >
+  ref={heroRef}
+  className="relative z-10 mx-auto w-full max-w-[1240px] px-6 pt-6"
+>
         {/* HERO CARD — single layer, fully transparent fill */}
         <div
           className="
             relative mx-auto w-full
             overflow-hidden
             rounded-xl
-            border border-white/15
             bg-transparent
             backdrop-blur-none
             shadow-[0_30px_80px_rgba(0,0,0,0.28)]
           "
           style={{
-            height: `calc(100svh - ${NAV_OFFSET_PX}px - 24px)`, // keeps hero inside one screen
-            maxHeight: 780, // avoids absurdly tall cards on huge monitors
-          }}
+  height: `calc(100svh - ${NAV_OFFSET_PX}px - 12px)`,
+  maxHeight: 600,
+}}
         >
           {/* Grid container */}
-          <div className="grid h-full gap-8 pl-6 pr-8 py-8 lg:grid-cols-2 lg:gap-10 lg:pl-8 lg:pr-10">
+          <div className="grid gap-4 px-4 py-4 lg:grid-cols-[1.4fr_1fr] lg:gap-5 lg:px-5 lg:py-5">
             {/* LEFT */}
             <div
               className={cx(
@@ -288,9 +286,10 @@ export default function HomePage() {
             >
               <div className="space-y-6">
 
-                <div className="text-xs font-semibold tracking-[0.22em] text-white/70">
-                  WELCOME TO ANILOG
+                <div className="text-sm sm:text-base font-semibold tracking-[0.24em] text-white/80">
+                WELCOME TO ANILOG !
                 </div>
+
 
                 <div className="space-y-4">
                   <h1 className="max-w-[560px] text-4xl font-semibold leading-[1.1] tracking-tight sm:text-5xl lg:text-5xl">
@@ -363,7 +362,7 @@ export default function HomePage() {
                 heroReveal ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3",
               )}
             >
-              <HeroPosterCollage posters={heroPosters} show={heroReveal} />
+              <HeroPosterCollage show={heroReveal} />
             </div>
           </div>
         </div>
@@ -503,14 +502,12 @@ export default function HomePage() {
                 Have a feature request or found a bug? Send a message and we&apos;ll get back to you.
               </p>
             </div>
-            <div className="hidden rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs text-white/70 backdrop-blur md:block">
-              Usually replies in 1-2 days
-            </div>
+            
           </div>
 
-          <div className="mt-6 grid gap-6 md:grid-cols-2">
+          <div className="mt-6 grid gap-6 md:grid-cols-2" suppressHydrationWarning>
             <form onSubmit={handleContactSubmit} className="grid gap-4 md:grid-cols-2" suppressHydrationWarning>
-              <div className="md:col-span-1">
+              <div className="md:col-span-1" suppressHydrationWarning>
                 <label className="text-xs font-semibold text-white/70">Name</label>
                 <input
                   value={contactName}
@@ -521,7 +518,7 @@ export default function HomePage() {
                 />
               </div>
 
-              <div className="md:col-span-1">
+              <div className="md:col-span-1" suppressHydrationWarning>
                 <label className="text-xs font-semibold text-white/70">Email</label>
                 <input
                   value={contactEmail}
@@ -532,7 +529,7 @@ export default function HomePage() {
                 />
               </div>
 
-              <div className="md:col-span-2">
+              <div className="md:col-span-2" suppressHydrationWarning>
                 <label className="text-xs font-semibold text-white/70">Message</label>
                 <textarea
                   value={contactMessage}
@@ -563,22 +560,10 @@ export default function HomePage() {
                 contactInView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3",
               )}
             >
-              <div className="text-sm font-semibold text-white/90">Quick links</div>
-              <div className="mt-3 grid gap-2 text-sm">
-                <Link href="/browse" className="text-indigo-200/80 hover:text-indigo-200">
-                  Browse anime -&gt;
-                </Link>
-                <Link href="/my-list" className="text-indigo-200/80 hover:text-indigo-200">
-                  Your list -&gt;
-                </Link>
-                <Link href="/contact" className="text-indigo-200/80 hover:text-indigo-200">
-                  Contact page -&gt;
-                </Link>
-              </div>
+             
+          
 
-              <div className="mt-6 text-xs text-white/55">
-                Tip: If you still see a hydration warning, disable browser extensions that inject DOM attributes (ad blockers, privacy tools) and hard refresh.
-              </div>
+              
             </div>
           </div>
         </div>
@@ -627,105 +612,204 @@ function PosterImage({ base, alt, priority }: { base: string; alt: string; prior
   );
 }
 
-/**
- * FIXES YOU ASKED FOR (based on sketch):
- * - Remove multiple frame layers -> now only ONE frame (single border)
- * - Remove internal color wash/shade -> no bg gradients, no glow overlays
- * - Align posters to center -> centered container + stable dimensions
- * - Make rectangles more normal/sharp -> rounded-xl and clean border
- */
-function HeroPosterCollage({ posters, show }: { posters: HeroPoster[]; show: boolean }) {
+function HeroPosterCollage({ show }: { show: boolean }) {
+  const posters = [
+    { src: "/posters/poster-1.png", alt: "Poster 1" },
+    { src: "/posters/poster-2.png", alt: "Poster 2" },
+    { src: "/posters/poster-3.png", alt: "Poster 3" },
+    { src: "/posters/poster-4.png", alt: "Poster 4" },
+    { src: "/posters/poster-5.png", alt: "Poster 5" },
+    { src: "/posters/poster-6.png", alt: "Poster 6" },
+    { src: "/posters/poster-7.png", alt: "Poster 7" },
+  ];
+
+  // current poster index
+  const [i, setI] = useState(0);
+  // previous poster index (used for crossfade)
+  const [prevI, setPrevI] = useState<number | null>(null);
+  // whether we’re in the middle of a fade transition
+  const [fading, setFading] = useState(false);
+  const [paused, setPaused] = useState(false);
+
+  useEffect(() => {
+    if (paused) return;
+
+    const interval = setInterval(() => {
+      setPrevI(i);
+      const next = (i + 1) % posters.length;
+      setI(next);
+      setFading(true);
+
+      // fade duration (match the CSS transition duration below)
+      const t = setTimeout(() => setFading(false), 550);
+      return () => clearTimeout(t);
+    }, 6500);
+
+    return () => clearInterval(interval);
+  }, [i, paused, posters.length]);
+
+  const current = posters[i];
+  const previous = prevI !== null ? posters[prevI] : null;
+
   return (
     <div
       className={cx(
-        "relative w-full",
-        // keep it stable across screens
-        "max-w-[900px] lg:max-w-[980px]",
-        // height like inspo “wide screen”
-        "h-[320px] sm:h-[380px] md:h-[420px] lg:h-[480px]",
-        show ? "opacity-100" : "opacity-0",
-        "transition-opacity duration-700"
+        "relative w-full max-w-[580px] lg:max-w-[640px]",
+        // wide hero rectangle height
+        "h-[320px] sm:h-[380px] lg:h-[520px]",
+        show ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2",
+        "transition-all duration-700"
       )}
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
     >
-      {/* ONE tilted “screen” like your inspiration */}
-      <div
-        className={cx(
-          "relative h-full w-full",
-          "transform-gpu",
-          // the tilt (this is the big piece that makes it look like the inspo)
-          "[transform:perspective(1400px)_rotateY(-16deg)_rotateX(6deg)_rotateZ(7deg)]"
-        )}
-      >
-        {/* Outer frame */}
-        <div
-          className={cx(
-            "absolute inset-0 square-[34px]",
-            "border border-white/15",
-            "bg-transparent",
-            // IMPORTANT: no blur here if you want the BG visible “cleanly”
-            // If you want a tiny glass feel, use backdrop-blur-[1px] not xl
-            "backdrop-blur-[1px]",
-            "shadow-[0_40px_140px_rgba(0,0,0,0.55)]"
-          )}
-        />
+      {/* Floaty shadow only (no border, no frame) */}
+      <div className="pointer-events-none absolute inset-0 rounded-[34px] shadow-[0_18px_60px_rgba(0,0,0,0)]" />
 
-        {/* Glow edge (inspo has a neon-ish edge) */}
-        <div
-          className={cx(
-            "pointer-events-none absolute -inset-[2px] rounded-[36px]",
-            "bg-[radial-gradient(circle_at_70%_10%,rgba(168,85,247,0.35),transparent_40%),radial-gradient(circle_at_10%_80%,rgba(59,130,246,0.22),transparent_45%)]",
-            "opacity-70 blur-[10px]"
-          )}
-        />
-
-        {/* Inner screen padding */}
-        <div className="absolute inset-5 md:inset-4 rounded-[26px] overflow-hidden">
-          {/* inner border line like the reference */}
-          <div className="pointer-events-none absolute inset-0 square-[26px] border border-white/10" />
-
-          {/* Posters area */}
-          <div className="absolute inset-0">
-            {posters.map((p, idx) => (
-              <div
-                key={p.base}
-                className={cx(
-                  "absolute",
-                  // poster sizing: scales with screen, stays proportional
-                  "w-[120px] sm:w-[140px] md:w-[160px] lg:w-[185px]",
-                  "aspect-[2/3]",
-                  // NO blur on the poster card (this is usually what people mean by “blur behind posters”)
-                  "bg-transparent",
-                  "overflow-hidden",
-                  // slightly less round than your current (closer to inspo)
-                  "rounded-2xl",
-                  "border border-white/15",
-                  // glow/shadow like inspo
-                  "shadow-[0_26px_90px_rgba(0,0,0,0.60)]",
-                  "ring-1 ring-white/10",
-                  // smooth appear
-                  "transition-transform duration-700 will-change-transform"
-                )}
-                style={{
-                  left: `${p.x}%`,
-                  top: `${p.y}%`,
-                  zIndex: p.z,
-                  transform: `translate(-50%, -50%) rotate(${p.r}deg) scale(${p.s})`,
-                  transitionDelay: `${120 + idx * 45}ms`,
-                }}
-              >
-                <PosterImage base={p.base} alt={`${p.base} poster`} priority={idx === 5} />
-
-                {/* subtle highlight edge like the reference */}
-                <div className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-white/15" />
-                <div className="pointer-events-none absolute inset-0 rounded-2xl bg-[radial-gradient(circle_at_20%_15%,rgba(255,255,255,0.22),transparent_45%)] opacity-70" />
-              </div>
-            ))}
+      {/* Viewport */}
+      <div className="absolute inset-[10px] overflow-hidden rounded-[20px]">
+        {/* PREVIOUS slide (fades OUT) */}
+        {previous && (
+          <div
+            className={cx(
+              "absolute inset-0 transition-opacity duration-[550ms]",
+              fading ? "opacity-0" : "opacity-0"
+            )}
+          >
+            <HeroNetflixSlide src={previous.src} alt={previous.alt} />
           </div>
+        )}
+
+        {/* CURRENT slide (fades IN) */}
+        <div
+          className={cx(
+            "absolute inset-0 transition-opacity duration-[550ms]",
+            prevI === null ? "opacity-100" : fading ? "opacity-100" : "opacity-100"
+          )}
+        >
+          <HeroNetflixSlide src={current.src} alt={current.alt} />
         </div>
       </div>
     </div>
   );
 }
+
+/**
+ * Netflix-style slide:
+ * - background uses SAME image, stretched + blurred + dark overlay (fills wide rectangle)
+ * - foreground shows the portrait poster sharp and centered
+ */
+function HeroNetflixSlide({ src, alt }: { src: string; alt: string }) {
+  return (
+    <div className="relative h-full w-full">
+      {/* Background fill (blurred version of SAME poster) */}
+      <div className="absolute inset-0">
+        <Image
+          src={src}
+          alt=""
+          fill
+          sizes="(min-width: 1024px) 640px, 520px"
+          className="object-cover scale-[1.08] blur-[18px] opacity-70"
+          priority
+        />
+        {/* Darken + vignette so foreground pops */}
+        <div className="absolute inset-0 bg-black/35" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,rgba(255,255,255,0.10),transparent_55%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(0,0,0,0.35),transparent_20%,transparent_80%,rgba(0,0,0,0.35))]" />
+      </div>
+
+      {/* Foreground poster (sharp, centered, portrait) */}
+      <div className="absolute inset-0 flex items-center justify-center">
+        <div className="relative h-[92%] aspect-[2/3] max-w-[360px] sm:max-w-[380px] lg:max-w-[420px] overflow-hidden rounded-[18px] shadow-[0_18px_55px_rgba(0,0,0,0.55)]">
+          <Image
+            src={src}
+            alt={alt}
+            fill
+            sizes="420px"
+            className="object-contain bg-black/15"
+            priority
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
+function MosaicPoster({
+  className,
+  src,
+  alt,
+  priority,
+}: {
+  className: string;
+  src: string;
+  alt: string;
+  priority?: boolean;
+}) {
+  return (
+    <div
+      className={cx(
+        "relative overflow-hidden",
+        // LESS rounding than your current version (closer to target)
+        "rounded-xl",
+        // Crisp border like the target
+        "border border-white/12",
+        // Dark depth shadow
+        "shadow-[0_28px_90px_rgba(0,0,0,0.60)]",
+        className
+      )}
+    >
+      <Image
+        src={src}
+        alt={alt}
+        fill
+        priority={priority}
+        sizes="(min-width: 1024px) 480px, (min-width: 768px) 360px, 280px"
+        className="object-cover"
+      />
+      {/* A tiny glossy highlight like your target (subtle, not blur) */}
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_15%,rgba(255,255,255,0.18),transparent_45%)] opacity-70" />
+      {/* Edge pop */}
+      <div className="pointer-events-none absolute inset-0 rounded-xl ring-1 ring-white/12" />
+    </div>
+  );
+}
+
+
+function GridPoster({
+  className,
+  src,
+  alt,
+  priority,
+}: {
+  className: string;
+  src: string;
+  alt: string;
+  priority?: boolean;
+}) {
+  return (
+    <div
+      className={cx(
+        "relative overflow-hidden rounded-2xl border border-white/15",
+        "shadow-[0_26px_90px_rgba(0,0,0,0.60)] ring-1 ring-white/10",
+        className
+      )}
+    >
+      <Image
+        src={src}
+        alt={alt}
+        fill
+        priority={priority}
+        sizes="(min-width: 1024px) 420px, (min-width: 768px) 320px, 260px"
+        className="object-cover"
+      />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_15%,rgba(255,255,255,0.20),transparent_45%)] opacity-70" />
+      <div className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-white/15" />
+    </div>
+  );
+}
+
 
 
 function QuickLookIcon({ type }: { type: QuickLookItem["icon"] }) {

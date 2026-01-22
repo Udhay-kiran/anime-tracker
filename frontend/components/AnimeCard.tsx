@@ -75,7 +75,7 @@ export default function AnimeCard({
       className={[
         "group relative block h-full rounded-xl p-5 pb-16",
         // Glass card base (works on a busy anime background)
-        "bg-black/35 backdrop-blur-md border border-white/10 shadow-lg",
+        "bg-gradient-to-br from-indigo-500/15 via-violet-500/10 to-white/5 backdrop-blur-md shadow-lg ring-1 ring-white/10",
         // Motion + glow (subtle)
         "transition duration-200 ease-out hover:-translate-y-1.5 hover:scale-[1.02] hover:shadow-2xl",
         "hover:ring-1 hover:ring-indigo-400/25",

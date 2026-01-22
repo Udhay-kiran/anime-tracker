@@ -409,22 +409,28 @@ export default function BrowsePage() {
     return (
       <>
         <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-          {visibleAnime.map((item) => {
+          {visibleAnime.map((item,index) => {
             const id = item._id ?? item.slug;
             const watchlistEntry = id ? watchlist[id] : undefined;
             return (
-              <AnimeCard
-                key={id}
-                anime={item}
-                isWatchlisted={Boolean(watchlistEntry)}
-                watchlistLoading={Boolean(id && (watchlistLoading[id] || favoriteLoading[id]))}
-                isFavorite={Boolean(watchlistEntry?.favorite)}
-                showFavorite
-                onToggleWatchlist={toggleWatchlist}
-                onToggleFavorite={toggleFavorite}
-                statusLabel={watchlistEntry?.status}
-              />
-            );
+  <div
+    key={id}
+    className="animate-fade-in-up"
+    style={{ animationDelay: `${index * 60}ms` }}
+  >
+    <AnimeCard
+      anime={item}
+      isWatchlisted={Boolean(watchlistEntry)}
+      watchlistLoading={Boolean(id && (watchlistLoading[id] || favoriteLoading[id]))}
+      isFavorite={Boolean(watchlistEntry?.favorite)}
+      showFavorite
+      onToggleWatchlist={toggleWatchlist}
+      onToggleFavorite={toggleFavorite}
+      statusLabel={watchlistEntry?.status}
+    />
+  </div>
+);
+
           })}
         </div>
         {visibleCount < filtered.length && (
@@ -456,9 +462,20 @@ export default function BrowsePage() {
     watchlistLoading,
   ]);
 
-  return (
-    <div className="min-h-screen text-white">
-      <div className="mx-auto max-w-6xl px-6 py-12">
+      return (
+  <main
+    className="relative min-h-screen overflow-x-hidden text-white"
+    style={{
+      backgroundImage:
+        "linear-gradient(145deg, rgba(69,38,160,0.02), rgba(20,14,62,0.10) 38%, rgba(7,7,20,0.12)), url('/bg/anilog-bg.webp')",
+      backgroundSize: "cover",
+      backgroundPosition: "center top",
+      backgroundRepeat: "no-repeat",
+      backgroundAttachment: "fixed",
+    }}
+  >
+    <div className="mx-auto max-w-6xl px-6 py-12">
+
         <header className="mb-8 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-indigo-300">
@@ -586,6 +603,6 @@ export default function BrowsePage() {
 
         <div className="mt-8">{content}</div>
       </div>
-    </div>
+    </main>
   );
 }
