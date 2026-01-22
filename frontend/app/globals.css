@@ -1,28 +1,74 @@
 @import "tailwindcss";
 
+/* globals.css */
+
+/* Background tokens */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg-0: #060812;
+  --bg-1: #090b16;
+  --bg-2: #0b0f1f;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html,
+body {
+  height: 100%;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background:
+    radial-gradient(900px 600px at 18% 18%, rgba(255,255,255,0.06), transparent 60%),
+    radial-gradient(900px 600px at 82% 22%, rgba(255,255,255,0.04), transparent 62%),
+    linear-gradient(180deg, var(--bg-0), var(--bg-1) 45%, var(--bg-2));
+  color: #e5e7eb;
   font-family: Arial, Helvetica, sans-serif;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Collage layer (NO BLUR — keep it crisp so glass doesn't become fog) */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: url("/bg/anilog-collage.webp");
+  background-size: cover;
+  background-position: center;
+  opacity: 0.10; /* tweak 0.08–0.14 */
+  filter: none;
+  transform: scale(1.02);
+  pointer-events: none;
+  z-index: -2;
+}
+
+/* Softer vignette */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(1100px 700px at 50% 30%, transparent 45%, rgba(0,0,0,0.45) 100%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* === Glass helpers === */
+@layer components {
+  .glass {
+    @apply bg-white/[0.02] border border-white/15 shadow-[0_30px_80px_rgba(0,0,0,0.30)];
+    backdrop-filter: blur(6px) saturate(160%) brightness(110%);
+  }
+
+  .glass-card {
+    @apply bg-white/[0.04] border border-white/12 shadow-[0_22px_60px_rgba(0,0,0,0.35)];
+    backdrop-filter: blur(10px) saturate(150%) brightness(105%);
+  }
+
+  .glass-hover {
+    @apply transition-transform duration-200 hover:-translate-y-0.5;
+  }
+
+  .text-muted {
+    @apply text-white/70;
+  }
 }
 
 @keyframes soft-bounce {
@@ -42,75 +88,6 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .animate-soft-bounce {
     animation: none;
-  }
-}
-
-/* globals.css */
-
-:root {
-  --bg-0: #070a12; /* deep navy */
-  --bg-1: #0b1024; /* navy */
-  --bg-2: #1a0f2e; /* purple */
-}
-
-html, body {
-  height: 100%;
-}
-
-body {
-  background: radial-gradient(1200px 600px at 20% 10%, rgba(124, 58, 237, 0.25), transparent 60%),
-              radial-gradient(900px 500px at 80% 20%, rgba(59, 130, 246, 0.18), transparent 55%),
-              linear-gradient(180deg, var(--bg-0), var(--bg-1) 40%, var(--bg-2));
-  color: #e5e7eb; /* tailwind gray-200 vibe */
-  position: relative;
-  overflow-x: hidden;
-}
-
-/* Collage layer */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  background-image: url("/bg/anilog-collage.webp");
-  background-size: cover;
-  background-position: center;
-  opacity: 0.06;            /* tweak 0.03–0.08 */
-  filter: blur(0.5px);
-  transform: scale(1.03);
-  pointer-events: none;
-  z-index: -2;
-}
-
-/* Vignette to keep edges clean + improve contrast */
-body::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  background: radial-gradient(1200px 800px at 50% 30%, transparent 40%, rgba(0,0,0,0.55) 100%);
-  pointer-events: none;
-  z-index: -1;
-}
-
-/* === Glass helpers (paste at bottom of globals.css) === */
-@layer components {
-  .glass {
-    @apply bg-white/5 backdrop-blur-md border border-white/10 shadow-lg;
-  }
-
-  .glass-strong {
-    @apply bg-black/40 backdrop-blur-md border border-white/10 shadow-lg;
-  }
-
-  .glass-card {
-  @apply bg-black/35 backdrop-blur-md border border-white/10 shadow-lg;
-}
-
-  .glass-hover {
-    @apply transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-xl;
-  }
-
-  .text-muted {
-    @apply text-white/70;
   }
 }
 

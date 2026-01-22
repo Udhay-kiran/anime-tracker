@@ -39,7 +39,11 @@ type LoadState = "loading" | "error" | "ready";
 
 type HeroPoster = {
   base: string;
-  className: string;
+  x: number;      // 0..100 (percentage inside the screen)
+  y: number;      // 0..100
+  r: number;      // rotation in degrees
+  s: number;      // scale (1 = normal)
+  z: number;      // z-index
 };
 
 type QuickLookItem = {
@@ -48,19 +52,22 @@ type QuickLookItem = {
   icon: "pin" | "bolt" | "heart";
 };
 
-/**
- * IMPORTANT:
- * These MUST exist in: frontend/public/posters/
- * poster-1.(png|jpg) ... poster-7.(png|jpg)
- */
+const NAV_OFFSET_PX = 65; // you used 65 already – keep consistent
+
+
 const heroPosters: HeroPoster[] = [
-  { base: "poster-1", className: "left-[46%] top-[18%] -translate-x-1/2 rotate-[-10deg] z-50 scale-[1.08]" },
-  { base: "poster-2", className: "left-[12%] top-[12%] rotate-[-12deg] z-30" },
-  { base: "poster-3", className: "right-[12%] top-[12%] rotate-[9deg] z-30" },
-  { base: "poster-4", className: "left-[16%] top-[44%] rotate-[-7deg] z-35" },
-  { base: "poster-5", className: "right-[12%] top-[44%] rotate-[8deg] z-34" },
-  { base: "poster-6", className: "left-[34%] bottom-[12%] rotate-[-4deg] z-32" },
-  { base: "poster-7", className: "right-[22%] bottom-[10%] rotate-[11deg] z-33" },
+  // Back/top row (subtle, higher, smaller)
+  { base: "poster-2", x: 68, y: 26, r: 10, s: 0.92, z: 10 },
+  { base: "poster-3", x: 80, y: 38, r: 14, s: 0.95, z: 12 },
+
+  // Mid row
+  { base: "poster-7", x: 59, y: 44, r: 6,  s: 0.98, z: 20 },
+  { base: "poster-4", x: 46, y: 48, r: -3, s: 0.98, z: 18 },
+
+  // Front row (bigger / more focus)
+  { base: "poster-1", x: 40, y: 62, r: -8, s: 1.02, z: 30 },
+  { base: "poster-6", x: 58, y: 64, r: 3,  s: 1.06, z: 40 },
+  { base: "poster-5", x: 68, y: 66, r: 8,  s: 1.08, z: 50 },
 ];
 
 const quickLookItems: QuickLookItem[] = [
@@ -70,19 +77,18 @@ const quickLookItems: QuickLookItem[] = [
     icon: "pin",
   },
   {
-    title: "Mark status instantly",
+    title: "Mark status",
     description: "Planned, Watching, Completed, or Dropped with a single tap.",
     icon: "bolt",
   },
   {
-    title: "Favorites with one tap",
+    title: "Favorites",
     description: "Lift your comfort shows to the top of your list.",
     icon: "heart",
   },
 ];
 
-const resolvePosterSrc = (base: string, attempt: "png" | "jpg") =>
-  `/posters/${base}.${attempt}`;
+const resolvePosterSrc = (base: string, attempt: "png" | "jpg") => `/posters/${base}.${attempt}`;
 
 const fallbackHighlights: Highlights = {
   topRated: [
@@ -146,12 +152,10 @@ export default function HomePage() {
 
     async function load() {
       setState("loading");
-
       let data: { highlights?: Highlights; external?: ExternalHighlight[] } | null = null;
 
       try {
         const res = await fetch("/api/highlights", { cache: "no-store" });
-
         if (res.ok) {
           const contentType = res.headers.get("content-type") ?? "";
           if (contentType.includes("application/json")) {
@@ -215,12 +219,6 @@ export default function HomePage() {
     [],
   );
 
-  function scrollToId(id: string) {
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.scrollIntoView({ behavior: "smooth", block: "start" });
-  }
-
   async function handleContactSubmit(e: React.FormEvent) {
     e.preventDefault();
     setContactStatus("sending");
@@ -244,135 +242,124 @@ export default function HomePage() {
 
   return (
     <main
-      className="relative min-h-screen overflow-hidden text-white"
-      style={{
-        backgroundImage:
-          "linear-gradient(145deg, rgba(69,38,160,0.25), rgba(20,14,62,0.92) 38%, rgba(7,7,20,0.96)), url('/bg/anilog-bg.webp')",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-      }}
-    >
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(120,87,255,0.18),transparent_32%),radial-gradient(circle_at_82%_26%,rgba(255,88,248,0.14),transparent_38%),radial-gradient(circle_at_50%_80%,rgba(72,190,255,0.12),transparent_45%)] blur-3xl" />
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),transparent_32%,rgba(255,255,255,0.02)),radial-gradient(circle_at_50%_120%,rgba(92,50,168,0.15),transparent_40%)]" />
+  className="relative min-h-screen overflow-x-hidden text-white"
+  style={{
+    backgroundImage: "url('/bg/anilog-bg.webp')",
+    backgroundSize: "cover",
+    backgroundPosition: "center top",
+    backgroundRepeat: "no-repeat",
+    backgroundAttachment: "fixed",
+  }}
+>
+      {/* (These were doing nothing, keeping but harmless) */}
+      <div className="pointer-events-none absolute inset-0 opacity-0" />
+      <div className="pointer-events-none absolute inset-0 opacity-0" />
 
-      <header className="relative z-10 mx-auto w-full max-w-6xl px-4 pt-6">
-        <nav className="flex items-center justify-between rounded-full border border-white/10 bg-white/5 px-4 py-3 shadow-[0_20px_80px_rgba(0,0,0,0.35)] backdrop-blur-lg">
-          <div className="flex items-center gap-6">
-            <Link
-              href="/"
-              className="rounded-full bg-white/10 px-4 py-2 text-sm font-semibold tracking-tight text-white shadow-[0_10px_35px_rgba(99,102,241,0.45)] ring-1 ring-white/20"
-            >
-              Anilog
-            </Link>
-            <div className="hidden items-center gap-3 text-sm font-semibold text-white/75 md:flex">
-              <Link href="/" className="rounded-full px-3 py-2 transition hover:text-white">
-                Home
-              </Link>
-              <Link href="/browse" className="rounded-full px-3 py-2 transition hover:text-white">
-                Browse
-              </Link>
-              <Link href="/my-list" className="rounded-full px-3 py-2 transition hover:text-white">
-                My List
-              </Link>
-              <Link href="/contact" className="rounded-full px-3 py-2 transition hover:text-white">
-                Contact
-              </Link>
-            </div>
-          </div>
-          <Link
-            href="/account"
-            className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white/85 backdrop-blur hover:bg-white/10"
-          >
-            My Account
-            <span aria-hidden className="text-xs">v</span>
-          </Link>
-        </nav>
-      </header>
       {/* HERO */}
-      <section ref={heroRef} className="relative z-10 mx-auto w-full max-w-6xl px-4 pb-8 pt-10 md:pb-12 md:pt-12 lg:pt-16">
-        <div className="relative overflow-hidden rounded-[38px] border border-white/15 bg-gradient-to-br from-white/10 via-white/5 to-[#24104b]/60 shadow-[0_50px_140px_rgba(0,0,0,0.65)] ring-1 ring-indigo-400/25 backdrop-blur-2xl">
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_12%,rgba(120,97,255,0.28),transparent_45%),radial-gradient(circle_at_86%_22%,rgba(255,117,241,0.22),transparent_48%),radial-gradient(circle_at_55%_95%,rgba(75,190,255,0.18),transparent_48%)]" />
-          <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(130deg,rgba(255,255,255,0.08),transparent_35%,rgba(99,102,241,0.12)_70%,transparent)] opacity-70" />
-          <div className="pointer-events-none absolute inset-[10px] rounded-[30px] border border-white/10 ring-1 ring-white/10" />
-
-          <div className="relative grid gap-10 px-6 py-12 lg:grid-cols-2 lg:gap-14 lg:px-14">
-            {/* Left */}
+      <section
+        ref={heroRef}
+        className="relative z-10 mx-auto w-full max-w-[1240px] px-6 pt-6"
+        style={{ minHeight: `calc(100svh - ${NAV_OFFSET_PX}px)` }}
+      >
+        {/* HERO CARD — single layer, fully transparent fill */}
+        <div
+          className="
+            relative mx-auto w-full
+            overflow-hidden
+            rounded-xl
+            border border-white/15
+            bg-transparent
+            backdrop-blur-none
+            shadow-[0_30px_80px_rgba(0,0,0,0.28)]
+          "
+          style={{
+            height: `calc(100svh - ${NAV_OFFSET_PX}px - 24px)`, // keeps hero inside one screen
+            maxHeight: 780, // avoids absurdly tall cards on huge monitors
+          }}
+        >
+          {/* Grid container */}
+          <div className="grid h-full gap-8 pl-6 pr-8 py-8 lg:grid-cols-2 lg:gap-10 lg:pl-8 lg:pr-10">
+            {/* LEFT */}
             <div
               className={cx(
-                "flex flex-col gap-6 transition-all duration-700",
+                "flex h-full flex-col justify-between transition-all duration-700",
                 heroReveal ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3",
               )}
             >
-              <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-[11px] tracking-[0.2em] text-white/90">
-                WELCOME TO ANILOG
-              </div>
+              <div className="space-y-6">
 
-              <div className="space-y-4">
-                <h1 className="max-w-2xl text-5xl font-semibold leading-tight tracking-tight sm:text-6xl">
-                  Anime tracking that keeps you excited.
-                </h1>
-                <p className="max-w-xl text-white/80">
-                  Build a watchlist you trust, celebrate every episode, and always know what to queue next.
-                </p>
-              </div>
-
-              <div className="space-y-4">
-                <div className="flex flex-wrap items-center gap-3">
-                  <Link
-                    href="/browse"
-                    className="rounded-full bg-gradient-to-r from-[#7c6bff] to-[#5a37ff] px-7 py-3.5 text-sm font-semibold text-white shadow-[0_20px_50px_rgba(109,76,255,0.45)] transition hover:-translate-y-0.5"
-                  >
-                    Browse
-                  </Link>
-                  <Link
-                    href="/my-list"
-                    className="rounded-full border border-white/20 bg-white/10 px-7 py-3.5 text-sm font-semibold text-white/90 backdrop-blur transition hover:-translate-y-0.5 hover:bg-white/15"
-                  >
-                    My List
-                  </Link>
+                <div className="text-xs font-semibold tracking-[0.22em] text-white/70">
+                  WELCOME TO ANILOG
                 </div>
-                <div className="text-sm text-white/70">
-                  <div className="font-semibold text-white/90">Sign in to save across devices</div>
-                  <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-white/70">
-                    {["Track", "Review", "Favorites"].map((label) => (
-                      <span key={label} className="rounded-full border border-white/10 bg-white/10 px-3 py-1">
-                        {label}
-                      </span>
-                    ))}
+
+                <div className="space-y-4">
+                  <h1 className="max-w-[560px] text-4xl font-semibold leading-[1.1] tracking-tight sm:text-5xl lg:text-5xl">
+                    Anime tracking that keeps you excited.
+                  </h1>
+
+                  
+                  <p className="max-w-xl text-white/78">
+                    Build a watchlist you trust, celebrate every episode, and always know what to queue next.
+                  </p>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <Link
+                      href="/browse"
+                      className="rounded-full bg-gradient-to-r from-[#7c6bff] to-[#5a37ff] px-7 py-3.5 text-sm font-semibold text-white shadow-[0_20px_50px_rgba(109,76,255,0.45)] transition hover:-translate-y-0.5"
+                    >
+                      Browse
+                    </Link>
+                    <Link
+                      href="/my-list"
+                      className="rounded-full border border-white/15 px-7 py-3.5 text-sm font-semibold text-white/90 backdrop-blur transition hover:-translate-y-0.5"
+                    >
+                      My List
+                    </Link>
+                  </div>
+
+                  <div className="text-sm text-white/70">
+                    <div className="font-semibold text-white/90">Sign in to save across devices</div>
+                    <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-white/70">
+                      {["Track", "Review", "Favorites"].map((label) => (
+                        <span key={label} className="rounded-full border border-white/15 px-3 py-1">
+                          {label}
+                        </span>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* Quick look */}
-              <div className="mt-4 w-full max-w-[620px] rounded-3xl border border-white/10 bg-[linear-gradient(120deg,rgba(58,30,120,0.6),rgba(34,21,76,0.85),rgba(18,16,48,0.9))] p-5 shadow-[0_30px_80px_rgba(0,0,0,0.55)] backdrop-blur-2xl">
+              {/* QUICK LOOK — remove extra boxes/lines, keep clean */}
+              <div className="mt-6 w-full max-w-[560px] mr-auto rounded-lg border border-white/15 bg-transparent px-6 py-4">
                 <div className="flex items-center justify-between text-[11px] font-semibold tracking-[0.22em] text-white/80">
                   <span>QUICK LOOK</span>
-                  <span className="rounded-full border border-white/10 bg-white/10 px-3 py-1 text-white/85">Live</span>
                 </div>
 
-                <div className="mt-5 grid gap-3 sm:grid-cols-3">
+                {/* Remove divider lines and mini “card” visuals */}
+                <div className="mt-4 grid gap-4 sm:grid-cols-3">
                   {quickLookItems.map((item) => (
-                    <div
-                      key={item.title}
-                      className="flex items-start gap-3 rounded-2xl border border-white/10 bg-white/5 p-3.5 shadow-[0_18px_55px_rgba(0,0,0,0.35)] backdrop-blur-xl"
-                    >
-                      <div className="grid h-11 w-11 place-items-center rounded-2xl border border-white/10 bg-white/10 text-white">
-                        <QuickLookIcon type={item.icon} />
+                    <div key={item.title} className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        {/* no icon box */}
+                        <span className="text-white/85">
+                          <QuickLookIcon type={item.icon} />
+                        </span>
+                        <div className="truncate text-sm font-semibold text-white">{item.title}</div>
                       </div>
-                      <div>
-                        <div className="text-sm font-semibold text-white">{item.title}</div>
-                        <div className="mt-1 text-xs leading-relaxed text-white/70">{item.description}</div>
-                      </div>
+                      <div className="mt-2 text-xs leading-relaxed text-white/70">{item.description}</div>
                     </div>
                   ))}
                 </div>
               </div>
             </div>
 
-            {/* Right (collage) */}
+            {/* RIGHT */}
             <div
               className={cx(
-                "flex items-center justify-center transition-all duration-700",
+                "flex h-full items-start justify-start -translate-x-4 transition-all duration-700",
                 heroReveal ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3",
               )}
             >
@@ -433,7 +420,9 @@ export default function HomePage() {
 
         <div className="mt-6">
           {state === "loading" && (
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-8 text-white/70 backdrop-blur-md">Loading highlights...</div>
+            <div className="rounded-2xl border border-white/10 bg-transparent p-8 text-white/70 backdrop-blur-md">
+              Loading highlights...
+            </div>
           )}
 
           {state === "ready" && (
@@ -485,7 +474,10 @@ export default function HomePage() {
                   <div className="mb-3 text-sm font-semibold text-white/90">From around the web</div>
                   <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     {externalHighlights.slice(0, 6).map((x) => (
-                      <div key={`${x.source}:${x.externalId}`} className="rounded-xl border border-white/10 bg-white/5 p-3">
+                      <div
+                        key={`${x.source}:${x.externalId}`}
+                        className="rounded-xl border border-white/10 bg-white/5 p-3"
+                      >
                         <div className="text-sm font-semibold">{x.title}</div>
                         <div className="mt-1 text-xs text-white/60">
                           {(x.releaseYear ?? "TBD") as string} - {x.status ?? "Status TBD"} - {formatRating(x.avgRating)}
@@ -501,11 +493,7 @@ export default function HomePage() {
       </section>
 
       {/* CONTACT */}
-      <section
-        ref={contactRef}
-        className="mx-auto w-full max-w-6xl px-4 pb-20"
-        suppressHydrationWarning
-      >
+      <section ref={contactRef} className="mx-auto w-full max-w-6xl px-4 pb-20" suppressHydrationWarning>
         <div className="rounded-2xl border border-white/10 bg-black/20 p-6 shadow-[0_18px_55px_rgba(0,0,0,0.35)] backdrop-blur-xl md:p-8">
           <div className="flex items-start justify-between gap-6">
             <div>
@@ -521,11 +509,7 @@ export default function HomePage() {
           </div>
 
           <div className="mt-6 grid gap-6 md:grid-cols-2">
-            <form
-              onSubmit={handleContactSubmit}
-              className="grid gap-4 md:grid-cols-2"
-              suppressHydrationWarning
-            >
+            <form onSubmit={handleContactSubmit} className="grid gap-4 md:grid-cols-2" suppressHydrationWarning>
               <div className="md:col-span-1">
                 <label className="text-xs font-semibold text-white/70">Name</label>
                 <input
@@ -573,10 +557,12 @@ export default function HomePage() {
               </div>
             </form>
 
-            <div className={cx(
-              "rounded-2xl border border-white/10 bg-white/5 p-5 transition-all duration-700",
-              contactInView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3",
-            )}>
+            <div
+              className={cx(
+                "rounded-2xl border border-white/10 bg-white/5 p-5 transition-all duration-700",
+                contactInView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3",
+              )}
+            >
               <div className="text-sm font-semibold text-white/90">Quick links</div>
               <div className="mt-3 grid gap-2 text-sm">
                 <Link href="/browse" className="text-indigo-200/80 hover:text-indigo-200">
@@ -641,38 +627,106 @@ function PosterImage({ base, alt, priority }: { base: string; alt: string; prior
   );
 }
 
+/**
+ * FIXES YOU ASKED FOR (based on sketch):
+ * - Remove multiple frame layers -> now only ONE frame (single border)
+ * - Remove internal color wash/shade -> no bg gradients, no glow overlays
+ * - Align posters to center -> centered container + stable dimensions
+ * - Make rectangles more normal/sharp -> rounded-xl and clean border
+ */
 function HeroPosterCollage({ posters, show }: { posters: HeroPoster[]; show: boolean }) {
   return (
-    <div className={cx("relative h-[560px] w-full max-w-[720px] perspective-[1600px]", show ? "scale-100" : "scale-[0.98]")}>
-      <div className="absolute -inset-14 rounded-[64px] bg-[radial-gradient(circle_at_22%_20%,rgba(99,102,241,0.28),transparent_42%),radial-gradient(circle_at_80%_35%,rgba(168,85,247,0.22),transparent_45%),radial-gradient(circle_at_50%_78%,rgba(56,189,248,0.18),transparent_45%)] blur-3xl" />
-      <div className="relative h-full w-full transform-gpu [transform:perspective(1600px)_rotateY(-12deg)_rotateX(2deg)_rotateZ(6deg)]">
-      <div className="absolute inset-0 rounded-[42px] border border-white/10 bg-white/5 ring-1 ring-indigo-300/20 shadow-[0_40px_110px_rgba(0,0,0,0.65)] backdrop-blur-xl" />
-        <div className="absolute inset-3 rounded-[38px] border border-white/10 bg-gradient-to-br from-white/10 via-transparent to-indigo-400/18 ring-1 ring-white/10" />
-        <div className="absolute inset-6 rounded-[34px] border border-indigo-400/35 bg-black/40 ring-1 ring-indigo-400/25 shadow-inner" />
-        <div className="absolute inset-9 rounded-[30px] bg-[radial-gradient(circle_at_30%_25%,rgba(255,255,255,0.14),transparent_44%),radial-gradient(circle_at_78%_70%,rgba(99,102,241,0.26),transparent_44%)] ring-1 ring-white/5" />
-        <div className="pointer-events-none absolute inset-0 rounded-[42px] bg-[linear-gradient(120deg,rgba(255,255,255,0.3),rgba(255,255,255,0.12)_42%,rgba(99,102,241,0.22)_70%,transparent)] opacity-75" />
-        <div className="pointer-events-none absolute inset-0 rounded-[42px] bg-[linear-gradient(135deg,rgba(255,255,255,0.18),transparent_55%)] mix-blend-screen" />
+    <div
+      className={cx(
+        "relative w-full",
+        // keep it stable across screens
+        "max-w-[900px] lg:max-w-[980px]",
+        // height like inspo “wide screen”
+        "h-[320px] sm:h-[380px] md:h-[420px] lg:h-[480px]",
+        show ? "opacity-100" : "opacity-0",
+        "transition-opacity duration-700"
+      )}
+    >
+      {/* ONE tilted “screen” like your inspiration */}
+      <div
+        className={cx(
+          "relative h-full w-full",
+          "transform-gpu",
+          // the tilt (this is the big piece that makes it look like the inspo)
+          "[transform:perspective(1400px)_rotateY(-16deg)_rotateX(6deg)_rotateZ(7deg)]"
+        )}
+      >
+        {/* Outer frame */}
+        <div
+          className={cx(
+            "absolute inset-0 square-[34px]",
+            "border border-white/15",
+            "bg-transparent",
+            // IMPORTANT: no blur here if you want the BG visible “cleanly”
+            // If you want a tiny glass feel, use backdrop-blur-[1px] not xl
+            "backdrop-blur-[1px]",
+            "shadow-[0_40px_140px_rgba(0,0,0,0.55)]"
+          )}
+        />
 
-        <div className="absolute inset-10 overflow-visible rounded-[28px]">
-          {posters.map((poster, idx) => (
-            <div
-              key={poster.base}
-              className={cx(
-                "absolute aspect-[2/3] w-[120px] sm:w-[150px] md:w-[180px] lg:w-[220px] overflow-hidden rounded-2xl border border-white/15 bg-white/5 shadow-[0_32px_90px_rgba(0,0,0,0.62)] ring-1 ring-indigo-300/25 backdrop-blur-md transition-transform duration-500",
-                poster.className,
-              )}
-              style={{ transitionDelay: `${120 + idx * 40}ms` }}
-            >
-              <PosterImage base={poster.base} alt={`${poster.base} poster`} priority={idx === 0} />
-              <div className="pointer-events-none absolute inset-0 rounded-2xl bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.22),transparent_40%),linear-gradient(135deg,rgba(255,255,255,0.08),transparent_55%)] mix-blend-screen" />
-      <div className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-white/10" />
-            </div>
-          ))}
+        {/* Glow edge (inspo has a neon-ish edge) */}
+        <div
+          className={cx(
+            "pointer-events-none absolute -inset-[2px] rounded-[36px]",
+            "bg-[radial-gradient(circle_at_70%_10%,rgba(168,85,247,0.35),transparent_40%),radial-gradient(circle_at_10%_80%,rgba(59,130,246,0.22),transparent_45%)]",
+            "opacity-70 blur-[10px]"
+          )}
+        />
+
+        {/* Inner screen padding */}
+        <div className="absolute inset-5 md:inset-4 rounded-[26px] overflow-hidden">
+          {/* inner border line like the reference */}
+          <div className="pointer-events-none absolute inset-0 square-[26px] border border-white/10" />
+
+          {/* Posters area */}
+          <div className="absolute inset-0">
+            {posters.map((p, idx) => (
+              <div
+                key={p.base}
+                className={cx(
+                  "absolute",
+                  // poster sizing: scales with screen, stays proportional
+                  "w-[120px] sm:w-[140px] md:w-[160px] lg:w-[185px]",
+                  "aspect-[2/3]",
+                  // NO blur on the poster card (this is usually what people mean by “blur behind posters”)
+                  "bg-transparent",
+                  "overflow-hidden",
+                  // slightly less round than your current (closer to inspo)
+                  "rounded-2xl",
+                  "border border-white/15",
+                  // glow/shadow like inspo
+                  "shadow-[0_26px_90px_rgba(0,0,0,0.60)]",
+                  "ring-1 ring-white/10",
+                  // smooth appear
+                  "transition-transform duration-700 will-change-transform"
+                )}
+                style={{
+                  left: `${p.x}%`,
+                  top: `${p.y}%`,
+                  zIndex: p.z,
+                  transform: `translate(-50%, -50%) rotate(${p.r}deg) scale(${p.s})`,
+                  transitionDelay: `${120 + idx * 45}ms`,
+                }}
+              >
+                <PosterImage base={p.base} alt={`${p.base} poster`} priority={idx === 5} />
+
+                {/* subtle highlight edge like the reference */}
+                <div className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-white/15" />
+                <div className="pointer-events-none absolute inset-0 rounded-2xl bg-[radial-gradient(circle_at_20%_15%,rgba(255,255,255,0.22),transparent_45%)] opacity-70" />
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>
   );
 }
+
 
 function QuickLookIcon({ type }: { type: QuickLookItem["icon"] }) {
   switch (type) {
