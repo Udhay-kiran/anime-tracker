@@ -10,6 +10,7 @@ const accountRoutes = require("./routes/accountRoutes");
 const favoriteRoutes = require("./routes/favoriteRoutes");
 const reviewRoutes = require("./routes/reviewRoutes");
 const externalRoutes = require("./routes/externalRoutes");
+const contactRoutes = require("./routes/contact");
 
 const app = express();
 
@@ -34,6 +35,7 @@ app.use("/api/account", accountRoutes);
 app.use("/api/favorites", favoriteRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/external", externalRoutes);
+app.use("/api/contact", contactRoutes);
 
 app.get("/api/health", (req, res) => {
   res.json({ ok: true, message: "Backend is running." });

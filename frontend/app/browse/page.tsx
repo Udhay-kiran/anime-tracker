@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import AnimeCard, { AnimeCardAnime } from "@/components/AnimeCard";
@@ -21,6 +21,8 @@ export default function BrowsePage() {
   const [state, setState] = useState<FetchState>("loading");
   const [error, setError] = useState<string | null>(null);
 
+  const searchParams = useSearchParams();
+
   const [query, setQuery] = useState("");
   const [genre, setGenre] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -28,6 +30,7 @@ export default function BrowsePage() {
   const [sort, setSort] = useState<string>("rating_desc");
   const [visibleCount, setVisibleCount] = useState(8);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   const [watchlist, setWatchlist] = useState<Record<string, WatchlistEntry>>({});
   const [watchlistLoading, setWatchlistLoading] = useState<Record<string, boolean>>({});
@@ -116,8 +119,48 @@ export default function BrowsePage() {
     return Array.from(set).sort((a, b) => b - a);
   }, [anime]);
 
+  const optionClass = "bg-[#0f0b24] text-white";
+  const resetFilters = () => {
+    setQuery("");
+    setGenre("all");
+    setStatusFilter("all");
+    setYear("all");
+    setSort("rating_desc");
+    if (searchParams?.get("slugs") || searchParams?.get("panel")) {
+      router.push("/browse");
+    }
+  };
+  useEffect(() => {
+    if (!searchParams) return;
+    const sortParam = searchParams.get("sort");
+    const statusParam = searchParams.get("status");
+    const yearParam = searchParams.get("year");
+
+    if (sortParam === "rating_desc" && sort !== "rating_desc") {
+      setSort("rating_desc");
+    }
+
+    if (statusParam === "upcoming" && statusFilter !== "coming_soon") {
+      setStatusFilter("coming_soon");
+    }
+
+    if (yearParam && yearOptions.includes(Number(yearParam)) && year !== yearParam) {
+      setYear(yearParam);
+    }
+  }, [searchParams, sort, statusFilter, year, yearOptions]);
+  const handleApplyMobile = () => {
+    setFiltersOpen(false);
+  };
+
+  const slugsParam = searchParams?.get("slugs");
+  const panelSlugs = useMemo(
+    () => (slugsParam ? slugsParam.split(",").map((s) => decodeURIComponent(s)) : null),
+    [slugsParam],
+  );
+
   const filtered = useMemo(() => {
-    let list = [...anime];
+    const base = panelSlugs ? anime.filter((item) => panelSlugs.includes(item.slug)) : [...anime];
+    let list = [...base];
 
     if (query.trim()) {
       const q = query.trim().toLowerCase();
@@ -141,9 +184,7 @@ export default function BrowsePage() {
 
     switch (sort) {
       case "year_desc":
-        list.sort(
-          (a, b) => (b.releaseYear ?? 0) - (a.releaseYear ?? 0)
-        );
+        list.sort((a, b) => (b.releaseYear ?? 0) - (a.releaseYear ?? 0));
         break;
       case "title_asc":
         list.sort((a, b) => a.title.localeCompare(b.title));
@@ -155,7 +196,7 @@ export default function BrowsePage() {
     }
 
     return list;
-  }, [anime, genre, query, sort, statusFilter, year]);
+  }, [anime, genre, query, sort, statusFilter, year, panelSlugs]);
 
   const visibleAnime = useMemo(
     () => filtered.slice(0, Math.min(visibleCount, filtered.length)),
@@ -371,7 +412,7 @@ export default function BrowsePage() {
   const content = useMemo(() => {
     if (state === "loading") {
       return (
-        <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           {[...Array(8)].map((_, index) => (
             <div
               key={index}
@@ -408,7 +449,7 @@ export default function BrowsePage() {
 
     return (
       <>
-        <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           {visibleAnime.map((item,index) => {
             const id = item._id ?? item.slug;
             const watchlistEntry = id ? watchlist[id] : undefined;
@@ -462,19 +503,152 @@ export default function BrowsePage() {
     watchlistLoading,
   ]);
 
-      return (
-  <main
-    className="relative min-h-screen overflow-x-hidden text-white"
-    style={{
-      backgroundImage:
-        "linear-gradient(145deg, rgba(69,38,160,0.02), rgba(20,14,62,0.10) 38%, rgba(7,7,20,0.12)), url('/bg/anilog-bg.webp')",
-      backgroundSize: "cover",
-      backgroundPosition: "center top",
-      backgroundRepeat: "no-repeat",
-      backgroundAttachment: "fixed",
-    }}
-  >
-    <div className="mx-auto max-w-6xl px-6 py-12">
+  const filterControls = (
+    <div className="grid gap-3 md:grid-cols-3">
+      <div className="md:col-span-2">
+        <label className="text-xs font-semibold uppercase tracking-[0.2em] text-white/70">
+          Search
+        </label>
+        <input
+          type="search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search by title..."
+          className="mt-2 w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white shadow-sm backdrop-blur focus:border-indigo-400 focus:outline-none"
+        />
+      </div>
+      <div>
+        <label className="text-xs font-semibold uppercase tracking-[0.2em] text-white/70">
+          Sort by
+        </label>
+        <select
+          value={sort}
+          onChange={(e) => setSort(e.target.value)}
+          className="mt-2 w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white shadow-sm backdrop-blur focus:border-indigo-400 focus:outline-none"
+        >
+          <option className={optionClass} value="rating_desc">
+            Rating (high to low)
+          </option>
+          <option className={optionClass} value="year_desc">
+            Year (newest first)
+          </option>
+          <option className={optionClass} value="title_asc">
+            Title (A-Z)
+          </option>
+        </select>
+      </div>
+
+      <div>
+        <label className="text-xs font-semibold uppercase tracking-[0.2em] text-white/70">
+          Genre
+        </label>
+        <select
+          value={genre}
+          onChange={(e) => setGenre(e.target.value)}
+          className="mt-2 w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white shadow-sm backdrop-blur focus:border-indigo-400 focus:outline-none"
+        >
+          <option className={optionClass} value="all">
+            All
+          </option>
+          {genreOptions.map((g) => (
+            <option className={optionClass} key={g} value={g}>
+              {g}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div>
+        <label className="text-xs font-semibold uppercase tracking-[0.2em] text-white/70">
+          Status
+        </label>
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="mt-2 w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white shadow-sm backdrop-blur focus:border-indigo-400 focus:outline-none"
+        >
+          <option className={optionClass} value="all">
+            All
+          </option>
+          <option className={optionClass} value="airing">
+            Airing
+          </option>
+          <option className={optionClass} value="finished">
+            Finished
+          </option>
+          <option className={optionClass} value="coming_soon">
+            Coming soon
+          </option>
+          <option className={optionClass} value="hiatus">
+            Hiatus
+          </option>
+        </select>
+      </div>
+      <div>
+        <label className="text-xs font-semibold uppercase tracking-[0.2em] text-white/70">
+          Year
+        </label>
+        <select
+          value={year}
+          onChange={(e) => setYear(e.target.value)}
+          className="mt-2 w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white shadow-sm backdrop-blur focus:border-indigo-400 focus:outline-none"
+        >
+          <option className={optionClass} value="all">
+            All
+          </option>
+          {yearOptions.map((y) => (
+            <option className={optionClass} key={y} value={y}>
+              {y}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div>
+        <label className="text-xs font-semibold uppercase tracking-[0.2em] text-white/70">
+          Quick actions
+        </label>
+        <div className="mt-2 flex flex-col gap-2 md:hidden">
+          <button
+            type="button"
+            aria-label="Apply filters"
+            onClick={handleApplyMobile}
+            className="w-full rounded-xl border border-white/15 bg-white/12 px-3 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:border-indigo-300 hover:text-white"
+          >
+            Apply filters
+          </button>
+          <button
+            type="button"
+            onClick={resetFilters}
+            className="w-full rounded-xl border border-white/15 bg-transparent px-3 py-2.5 text-sm font-semibold text-white/80 transition hover:border-indigo-300 hover:text-white"
+          >
+            Reset filters
+          </button>
+        </div>
+        <div className="mt-2 hidden gap-2 md:flex">
+          <button
+            type="button"
+            onClick={resetFilters}
+            className="w-full rounded-lg border border-white/20 px-3 py-2 text-sm font-semibold text-white transition hover:border-indigo-300 hover:text-white"
+          >
+            Reset filters
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <main
+      className="relative min-h-screen overflow-x-hidden text-white"
+      style={{
+        backgroundImage:
+          "linear-gradient(145deg, rgba(69,38,160,0.02), rgba(20,14,62,0.10) 38%, rgba(7,7,20,0.12)), url('/bg/anilog-bg.webp')",
+        backgroundSize: "cover",
+        backgroundPosition: "center top",
+        backgroundRepeat: "no-repeat",
+        backgroundAttachment: "fixed",
+      }}
+    >
+      <div className="mx-auto max-w-6xl px-6 py-12">
 
         <header className="mb-8 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
@@ -483,123 +657,59 @@ export default function BrowsePage() {
             </p>
             <h1 className="text-3xl font-semibold md:text-4xl">Browse anime</h1>
             <p className="mt-2 max-w-2xl text-sm text-white/80 md:text-base">
-              Filter by genre, status, and year while sorting by rating or title. Data
-              loads straight from the Express API at http://localhost:4000/api/anime.
+              Filter by genre, status, and year while sorting by rating or title.
             </p>
+            {panelSlugs && (
+              <div className="mt-2 flex items-center gap-3">
+                <span className="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-semibold text-white/85">
+                  Showing: {searchParams?.get("panel") === "topRated" ? "Top rated" : "Trending"}
+                </span>
+                <Link
+                  href="/browse"
+                  className="text-xs font-semibold text-indigo-200 underline underline-offset-4"
+                >
+                  Clear preset
+                </Link>
+              </div>
+            )}
           </div>
-          <div className="flex flex-col items-start gap-2 text-sm font-semibold text-white/85 md:items-end">
+          <div className="flex flex-col items-start gap-3 text-sm font-semibold text-white/85 md:items-end">
             <div className="rounded-full border border-white/15 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white/80 shadow-sm backdrop-blur">
               {filtered.length} results
             </div>
-            <Link href="/#contact" className="transition hover:text-white">
-              Contact us
-            </Link>
+            <button
+              type="button"
+              onClick={() => setFiltersOpen(true)}
+              className="flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-white/85 shadow-sm backdrop-blur transition hover:border-indigo-300 hover:text-white md:hidden"
+            >
+              Filters
+            </button>
           </div>
         </header>
 
-        <div className="rounded-2xl border border-white/10 bg-white/10 p-5 shadow-lg backdrop-blur">
-          <div className="grid gap-3 md:grid-cols-3">
-            <div className="md:col-span-2">
-              <label className="text-xs font-semibold uppercase tracking-[0.2em] text-white/70">
-                Search
-              </label>
-              <input
-                type="search"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search by title..."
-                className="mt-2 w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white shadow-sm backdrop-blur focus:border-indigo-400 focus:outline-none"
-              />
-            </div>
-            <div>
-              <label className="text-xs font-semibold uppercase tracking-[0.2em] text-white/70">
-                Sort by
-              </label>
-              <select
-                value={sort}
-                onChange={(e) => setSort(e.target.value)}
-                className="mt-2 w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white shadow-sm backdrop-blur focus:border-indigo-400 focus:outline-none"
-              >
-                <option value="rating_desc">Rating (high to low)</option>
-                <option value="year_desc">Year (newest first)</option>
-                <option value="title_asc">Title (A-Z)</option>
-              </select>
-            </div>
-          </div>
+        <div className="hidden rounded-2xl border border-white/10 bg-white/10 p-5 shadow-lg backdrop-blur lg:block">
+          {filterControls}
+        </div>
 
-          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <div>
-              <label className="text-xs font-semibold uppercase tracking-[0.2em] text-white/70">
-                Genre
-              </label>
-              <select
-                value={genre}
-                onChange={(e) => setGenre(e.target.value)}
-                className="mt-2 w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white shadow-sm backdrop-blur focus:border-indigo-400 focus:outline-none"
-              >
-                <option value="all">All</option>
-                {genreOptions.map((g) => (
-                  <option key={g} value={g}>
-                    {g}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="text-xs font-semibold uppercase tracking-[0.2em] text-white/70">
-                Status
-              </label>
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="mt-2 w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white shadow-sm backdrop-blur focus:border-indigo-400 focus:outline-none"
-              >
-                <option value="all">All</option>
-                <option value="airing">Airing</option>
-                <option value="finished">Finished</option>
-                <option value="coming_soon">Coming soon</option>
-                <option value="hiatus">Hiatus</option>
-              </select>
-            </div>
-            <div>
-              <label className="text-xs font-semibold uppercase tracking-[0.2em] text-white/70">
-                Year
-              </label>
-              <select
-                value={year}
-                onChange={(e) => setYear(e.target.value)}
-                className="mt-2 w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white shadow-sm backdrop-blur focus:border-indigo-400 focus:outline-none"
-              >
-                <option value="all">All</option>
-                {yearOptions.map((y) => (
-                  <option key={y} value={y}>
-                    {y}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="text-xs font-semibold uppercase tracking-[0.2em] text-white/70">
-                Quick actions
-              </label>
-              <div className="mt-2 flex gap-2">
+        {/* Mobile filters modal */}
+        {filtersOpen && (
+          <div className="fixed inset-0 z-60 bg-black/60 backdrop-blur-sm lg:hidden">
+            <div className="absolute inset-4 rounded-3xl border border-white/15 bg-[#0d0a1f]/95 p-5 shadow-[0_20px_60px_rgba(0,0,0,0.6)]">
+              <div className="mb-4 flex items-center justify-between">
+                <div className="text-sm font-semibold uppercase tracking-[0.18em] text-white/80">Filters</div>
                 <button
                   type="button"
-                  onClick={() => {
-                    setQuery("");
-                    setGenre("all");
-                    setStatusFilter("all");
-                    setYear("all");
-                    setSort("rating_desc");
-                  }}
-                  className="w-full rounded-lg border border-white/20 px-3 py-2 text-sm font-semibold text-white transition hover:border-indigo-300 hover:text-white"
+                  aria-label="Close filters"
+                  onClick={() => setFiltersOpen(false)}
+                  className="md:hidden rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-semibold text-white/80 hover:border-indigo-300 hover:text-white"
                 >
-                  Reset filters
+                  ×
                 </button>
               </div>
+              <div className="max-h-[70vh] overflow-y-auto pr-1">{filterControls}</div>
             </div>
           </div>
-        </div>
+        )}
 
         <div className="mt-8">{content}</div>
       </div>

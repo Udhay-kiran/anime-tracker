@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+import ScrollToHash from "./components/ScrollToHash";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -34,9 +35,10 @@ export default function RootLayout({
           className="fixed inset-0 -z-20 bg-cover bg-center bg-fixed"
           style={{ backgroundImage: "url('/bg/anilog-bg.webp')" }}
         />
-        <div className="fixed inset-0 -z-10 bg-black/70" />
+        <div className="page-overlay fixed inset-0 -z-10 bg-black/70" />
         <div className="relative z-10 min-h-screen bg-gradient-to-br from-[#0b1022]/70 via-[#0f1731]/70 to-[#111827]/70">
           <Navbar />
+          <ScrollToHash />
           <main className="flex-1 pt-16">{children}</main>
           <Footer />
         </div>

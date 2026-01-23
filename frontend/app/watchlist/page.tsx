@@ -10,6 +10,7 @@ type Anime = {
   synopsis: string;
   releaseYear: number;
   avgRating?: number | null;
+  posterUrl?: string;
 };
 
 type WatchlistItem = {
@@ -45,6 +46,8 @@ const STATUS_BADGES: Record<string, string> = {
   dropped: "Dropped",
 };
 
+const GLASS_CARD =
+  "rounded-2xl border border-white/15 bg-gradient-to-br from-black/30 via-[#140d36]/50 to-[#0c0a23]/60 shadow-[0_18px_50px_rgba(0,0,0,0.45)] ring-1 ring-indigo-400/12 backdrop-blur-xl";
 const formatRating = (value?: number | null) => {
   if (value === null || value === undefined || Number.isNaN(value)) return "N/A";
   return value.toFixed(1);
@@ -81,6 +84,11 @@ export default function WatchlistPage() {
 
   useEffect(() => {
     fetchWatchlist();
+  }, []);
+
+  useEffect(() => {
+    document.body.classList.add("no-watchlist-overlay");
+    return () => document.body.classList.remove("no-watchlist-overlay");
   }, []);
 
   useEffect(() => {
@@ -226,7 +234,14 @@ const canLoadMore = visibleCount < filteredItems.length;
   };
 
   return (
-    <div className="min-h-screen text-white">
+    <>
+      <style jsx global>{`
+        .page-overlay {
+          display: none !important;
+          opacity: 0 !important;
+        }
+      `}</style>
+      <div className="min-h-screen text-white">
       <div className="mx-auto max-w-6xl px-6 py-12">
         <header className="flex flex-col gap-2">
           <p className="text-sm font-medium uppercase tracking-[0.2em] text-indigo-300">
@@ -238,6 +253,7 @@ const canLoadMore = visibleCount < filteredItems.length;
           </p>
           <Link
             href="/#contact"
+            scroll={false}
             className="text-sm font-semibold text-white/85 transition hover:text-white"
           >
             Contact us
@@ -275,7 +291,7 @@ const canLoadMore = visibleCount < filteredItems.length;
 
         <div className="mt-8">
           {loading ? (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
               {[...Array(8)].map((_, idx) => (
                 <div
                   key={idx}
@@ -305,7 +321,7 @@ const canLoadMore = visibleCount < filteredItems.length;
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                 {visibleItems.map((item) => (
                   <WatchlistCard
                     key={item._id}
@@ -333,6 +349,7 @@ const canLoadMore = visibleCount < filteredItems.length;
         </div>
       </div>
     </div>
+    </>
   );
 }
 
@@ -350,76 +367,86 @@ function WatchlistCard({
   onRemove: () => void;
 }) {
   return (
-    <article className="group relative flex h-full flex-col rounded-xl border border-white/15 bg-white/10 p-5 shadow-lg backdrop-blur transition hover:-translate-y-1 hover:shadow-2xl hover:ring-1 hover:ring-indigo-400/30">
-      <div className="flex items-start gap-3">
-        <div className="flex-1">
+    <article
+      className={`group relative flex h-full flex-row items-stretch ${GLASS_CARD} p-3 shadow-lg transition hover:-translate-y-1 hover:shadow-2xl hover:ring-1 hover:ring-indigo-400/30 md:flex-col md:gap-4 sm:p-5`}
+    >
+      {item.status === "completed" ? (
+        <button
+          type="button"
+          aria-pressed={item.favorite}
+          aria-label={item.favorite ? "Remove heart" : "Add heart"}
+          onClick={onFavorite}
+          disabled={mutating}
+          className={`pointer-events-auto absolute right-2 top-2 z-20 flex h-9 w-9 items-center justify-center rounded-full border text-sm transition ${
+            item.favorite
+              ? "border-rose-300/70 bg-rose-500/25 text-rose-50"
+              : "border-white/15 bg-black/35 text-white/90 hover:border-rose-300/40 hover:text-rose-200"
+          } ${mutating ? "opacity-60" : ""} backdrop-blur-md`}
+        >
+          <HeartIcon filled={item.favorite} />
+        </button>
+      ) : null}
+
+      <div className="w-[84px] h-[116px] shrink-0 overflow-hidden rounded-xl border border-white/12 bg-white/8 shadow-inner md:mx-auto md:h-auto md:w-full md:aspect-[3/4]">
+        {item.anime.posterUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={item.anime.posterUrl} alt={item.anime.title} className="h-full w-full object-cover" />
+        ) : (
+          <div className="flex h-full items-center justify-center text-[11px] font-semibold uppercase tracking-wide text-white/50">
+            Poster
+          </div>
+        )}
+      </div>
+
+      <div className="ml-3 flex min-w-0 flex-1 flex-col justify-between md:ml-0 md:mt-4 md:gap-3">
+        <div className="min-w-0">
           <Link
             href={`/anime/${item.anime.slug}`}
-            className="line-clamp-2 text-lg font-semibold text-white transition hover:text-indigo-200"
+            className="line-clamp-2 text-sm font-semibold leading-tight text-white transition hover:text-indigo-200 md:text-lg"
           >
             {item.anime.title}
           </Link>
-          <p className="mt-2 line-clamp-3 text-sm leading-6 text-white/80">{item.anime.synopsis}</p>
+          <p className="mt-1 line-clamp-2 text-xs leading-5 text-white/80 md:mt-2 md:line-clamp-3 md:text-sm md:leading-6">
+            {item.anime.synopsis}
+          </p>
         </div>
-        {item.status === "completed" ? (
-          <div
-            className={`transition ${
-              item.favorite
-                ? "opacity-100 pointer-events-auto"
-                : "opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto"
-            }`}
+
+        <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[10px] font-semibold text-white/80 md:mt-3 md:gap-2 md:text-xs">
+          <span className="rounded-md bg-indigo-500/20 px-2.5 py-0.5 text-indigo-100">
+            {STATUS_BADGES[item.status] ?? item.status}
+          </span>
+          <span className="rounded-md bg-white/10 px-2.5 py-0.5 text-white/80">
+            {item.anime.releaseYear}
+          </span>
+          <span className="rounded-md bg-white/10 px-2.5 py-0.5 text-white/80">
+            Rating: {formatRating(item.anime.avgRating)}
+          </span>
+        </div>
+
+        <div className="mt-3 flex flex-col gap-2 md:mt-4 md:flex-row md:flex-wrap md:items-center md:justify-between">
+          <select
+            className="rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-xs font-semibold text-white shadow-sm transition focus:border-indigo-400 focus:outline-none disabled:opacity-60"
+            value={item.status}
+            onChange={(e) => onStatusChange(e.target.value)}
+            disabled={mutating}
           >
+            {WATCH_STATUSES.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+          <div className="flex items-center gap-2 md:justify-end">
             <button
               type="button"
-              aria-pressed={item.favorite}
-              aria-label={item.favorite ? "Remove heart" : "Add heart"}
-              onClick={onFavorite}
+              onClick={onRemove}
               disabled={mutating}
-              className={`flex items-center justify-center rounded-full border px-4 py-2 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 ${
-                item.favorite
-                  ? "border-rose-300/80 bg-rose-500/20 text-rose-100"
-                  : "border-white/30 bg-white/10 text-white hover:border-rose-300 hover:text-rose-100"
-              } ${mutating ? "opacity-60" : ""}`}
+              className="rounded-lg border border-red-300/50 bg-red-500/10 px-3 py-2 text-xs font-semibold text-red-100 transition hover:bg-red-500/20 disabled:opacity-60"
             >
-              <HeartIcon filled={item.favorite} />
+              Remove
             </button>
           </div>
-        ) : null}
-      </div>
-
-      <div className="mt-4 flex flex-wrap items-center gap-2 text-xs font-semibold text-white/80">
-        <span className="rounded-full bg-indigo-500/20 px-3 py-1 text-indigo-100">
-          {STATUS_BADGES[item.status] ?? item.status}
-        </span>
-        <span className="rounded-full bg-white/10 px-3 py-1 text-white/80">
-          {item.anime.releaseYear}
-        </span>
-        <span className="rounded-full bg-white/10 px-3 py-1 text-white/80">
-          Rating: {formatRating(item.anime.avgRating)}
-        </span>
-      </div>
-
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-        <select
-          className="rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-xs font-semibold text-white shadow-sm transition focus:border-indigo-400 focus:outline-none disabled:opacity-60"
-          value={item.status}
-          onChange={(e) => onStatusChange(e.target.value)}
-          disabled={mutating}
-        >
-          {WATCH_STATUSES.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-        <button
-          type="button"
-          onClick={onRemove}
-          disabled={mutating}
-          className="rounded-lg border border-red-300/50 bg-red-500/10 px-3 py-2 text-xs font-semibold text-red-100 transition hover:bg-red-500/20 disabled:opacity-60"
-        >
-          Remove
-        </button>
+        </div>
       </div>
     </article>
   );

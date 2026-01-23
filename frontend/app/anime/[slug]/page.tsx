@@ -475,20 +475,20 @@ export default function AnimePage() {
                 />
               </div>
 
-              <div className="flex-1">
+              <div className="flex-1 min-w-0">
                 <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-white/90 backdrop-blur">
-                  Anime
-                  <span className="h-1 w-1 rounded-full bg-white/50" />
-                  {anime.releaseYear}
-                  <span className="h-1 w-1 rounded-full bg-white/50" />
-                  {anime.status}
+                  <span>Anime</span>
+                  <span className="mx-1 opacity-70">•</span>
+                  <span>{anime.releaseYear}</span>
+                  <span className="mx-1 opacity-70">•</span>
+                  <span>{anime.status}</span>
                 </div>
 
-                <h1 className="mt-3 text-3xl font-semibold text-white drop-shadow md:text-5xl">
+                <h1 className="mt-3 break-words text-3xl font-semibold leading-tight text-white drop-shadow sm:text-4xl lg:text-6xl">
                   {anime.title}
                 </h1>
 
-                <p className="mt-3 max-w-3xl text-sm text-white/85 md:text-base">
+                <p className="mt-3 max-w-prose break-words text-sm leading-relaxed text-white/85 md:text-base">
                   {shortSynopsis || "No synopsis available."}
                 </p>
 
@@ -521,9 +521,9 @@ export default function AnimePage() {
 
         {/* Mobile top section (no banner, fixed poster size) */}
         <section className="md:hidden overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm">
-          <div className="p-5">
-            <div className="flex items-start gap-4">
-              <div className="w-[120px] shrink-0 overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm">
+          <div className="p-4">
+            <div className="grid grid-cols-[120px_1fr] gap-3">
+              <div className="w-[120px] shrink-0 overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm">
                 <div className="relative aspect-[2/3] w-full">
                   <Image
                     src={posterSrc}
@@ -536,49 +536,53 @@ export default function AnimePage() {
                 </div>
               </div>
 
-              <div className="min-w-0 flex-1">
-                <div className="text-xs font-semibold uppercase tracking-[0.2em] text-indigo-600">
-                  Anime
-                  {anime.releaseYear ? ` Â· ${anime.releaseYear}` : ""}
-                  {anime.status ? ` Â· ${anime.status}` : ""}
-                </div>
-                <h1 className="mt-2 text-3xl font-extrabold leading-tight text-zinc-900">
-                  {anime.title}
-                </h1>
-                {shortSynopsis ? (
-                  <p className="mt-2 text-sm text-zinc-600">{shortSynopsis}</p>
-                ) : null}
-
-                <div className="mt-3 flex items-center gap-3">
-                  <div className="rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2">
-                    <div className="text-[10px] font-semibold uppercase tracking-[0.25em] text-zinc-500">
-                      Rating
-                    </div>
-                    <div className="text-lg font-extrabold leading-tight">
-                      {formatRating(anime.avgRating)}
-                    </div>
+              <div className="min-w-0 flex flex-col gap-2">
+                <div className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2">
+                  <div className="text-[10px] font-semibold uppercase tracking-[0.25em] text-zinc-500">
+                    Rating
                   </div>
-                  {Array.isArray(anime.genres) && anime.genres.length ? (
-                    <div className="flex flex-wrap gap-2">
-                      {anime.genres.slice(0, 3).map((g) => (
-                        <span
-                          key={g}
-                          className="rounded-full bg-zinc-900/5 px-2.5 py-1 text-xs font-semibold text-zinc-700"
-                        >
-                          {g}
-                        </span>
-                      ))}
-                    </div>
-                  ) : null}
+                  <div className="text-lg font-extrabold leading-tight">
+                    {formatRating(anime.avgRating)}
+                  </div>
                 </div>
+
+                {Array.isArray(anime.genres) && anime.genres.length ? (
+                  <div className="flex flex-wrap gap-2">
+                    {anime.genres.slice(0, 6).map((g) => (
+                      <span
+                        key={g}
+                        className="rounded-full bg-zinc-900/5 px-2.5 py-1 text-xs font-semibold text-zinc-700"
+                      >
+                        {g}
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
               </div>
             </div>
+
+            <div className="mt-4 text-xs font-semibold uppercase tracking-[0.2em] text-indigo-600">
+              Anime
+              {anime.releaseYear ? <span className="mx-1 opacity-70">·</span> : null}
+              {anime.releaseYear ?? ""}
+              {anime.status ? <span className="mx-1 opacity-70">·</span> : null}
+              {anime.status ?? ""}
+            </div>
+
+            <h1 className="mt-2 break-words text-3xl font-extrabold leading-tight text-zinc-900 sm:text-4xl">
+              {anime.title}
+            </h1>
+            {shortSynopsis ? (
+              <p className="mt-2 max-w-prose break-words text-sm leading-relaxed text-zinc-600">
+                {shortSynopsis}
+              </p>
+            ) : null}
           </div>
         </section>
 
         <div className="mt-10 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
           <div className="text-sm font-medium text-zinc-700">Stats</div>
-          <div className="mt-4 grid gap-4 sm:grid-cols-3">
+          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-3">
             <Stat label="Release year" value={fallback(anime.releaseYear)} />
             <Stat label="Status" value={fallback(anime.status)} />
             <Stat label="Average rating" value={fallback(formatRating(anime.avgRating))} />
@@ -855,11 +859,11 @@ function RatingPicker({
 
 function Stat({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="flex flex-col gap-1 rounded-lg bg-zinc-100/60 px-3 py-2">
+    <div className="flex min-w-0 flex-col gap-1 rounded-lg bg-zinc-100/60 px-3 py-2">
       <span className="text-xs font-medium uppercase tracking-wide text-zinc-500">
         {label}
       </span>
-      <span className="text-base font-semibold text-zinc-900">{value}</span>
+      <span className="text-base font-semibold text-zinc-900 break-words whitespace-normal">{value}</span>
     </div>
   );
 }

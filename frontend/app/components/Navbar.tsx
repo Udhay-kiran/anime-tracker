@@ -9,13 +9,18 @@ type SessionUser = {
   email: string;
 };
 
+type OpenMenu = "menu" | "account" | null;
+
 export default function Navbar() {
-  const [open, setOpen] = useState(false);
+  const [openMenu, setOpenMenu] = useState<OpenMenu>(null);
   const [user, setUser] = useState<SessionUser | null>(null);
   const [checking, setChecking] = useState(true);
   const router = useRouter();
   const pathname = usePathname();
-  const menuRef = useRef<HTMLDivElement | null>(null);
+  const accountRef = useRef<HTMLDivElement | null>(null);
+  const mobileMenuRef = useRef<HTMLDivElement | null>(null);
+  const mobileButtonRef = useRef<HTMLButtonElement | null>(null);
+  const navRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -50,17 +55,29 @@ export default function Navbar() {
 
   useEffect(() => {
     const handlePointerDown = (event: PointerEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setOpen(false);
+      const target = event.target as Node;
+      const insideNav = navRef.current?.contains(target);
+      const insideAccount = accountRef.current?.contains(target);
+      const insideMobileMenu = mobileMenuRef.current?.contains(target);
+      const onMobileButton = mobileButtonRef.current?.contains(target);
+      if (!insideNav && !insideAccount && !insideMobileMenu && !onMobileButton) {
+        setOpenMenu(null);
       }
     };
 
-    if (open) {
-      document.addEventListener("pointerdown", handlePointerDown);
-    }
+    const handleKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setOpenMenu(null);
+      }
+    };
 
-    return () => document.removeEventListener("pointerdown", handlePointerDown);
-  }, [open]);
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKey);
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKey);
+    };
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -72,27 +89,36 @@ export default function Navbar() {
       // ignore
     } finally {
       setUser(null);
-      setOpen(false);
+      setOpenMenu(null);
       router.push("/");
     }
   };
 
   return (
-    <nav className="fixed top-0 w-full z-50 bg-black/40 backdrop-blur-md border-b border-white/10">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-2">
-        <div className="flex items-center gap-5">
+    <nav className="fixed top-0 w-full z-50 bg-black/40 border-b border-white/10 isolate">
+      {openMenu !== null && (
+        <div
+          className="fixed inset-0 z-40 bg-black/35"
+          onClick={() => {
+            setOpenMenu(null);
+          }}
+        />
+      )}
+      <div ref={navRef} className="relative z-50 mx-auto flex max-w-6xl items-center justify-between px-4 py-2">
+        <div className="flex items-center gap-5 min-w-0">
           <Link
             href="/"
             className="text-base font-semibold tracking-tight text-white transition hover:drop-shadow-[0_0_12px_rgba(99,102,241,0.45)]"
           >
             Anilog
           </Link>
-          <div className="flex items-center gap-2 text-sm font-semibold">
+          <div className="hidden items-center gap-2 text-sm font-semibold md:flex">
             <NavLink href="/" label="Home" />
             <NavLink href="/browse" label="Browse" />
             <NavLink href="/watchlist" label="My List" />
             <Link
               href="/#contact"
+              scroll={false}
               className="rounded-lg px-3 py-2 text-white/80 transition hover:text-white hover:drop-shadow-[0_0_10px_rgba(99,102,241,0.35)]"
             >
               Contact
@@ -100,40 +126,58 @@ export default function Navbar() {
           </div>
         </div>
 
-        <div ref={menuRef} className="relative">
+        <div className="flex items-center gap-2">
+          <button
+            ref={mobileButtonRef}
+            type="button"
+            onClick={() => setOpenMenu((prev) => (prev === "menu" ? null : "menu"))}
+            aria-expanded={openMenu === "menu"}
+            aria-controls="mobile-nav-menu"
+            onPointerDown={(e) => e.stopPropagation()}
+            className="flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-3 py-2 text-sm font-semibold text-white/85 shadow-sm transition hover:border-white/30 hover:text-white hover:drop-shadow-[0_0_10px_rgba(99,102,241,0.35)] md:hidden"
+          >
+            Menu
+            <span className={`text-xs transition ${openMenu === "menu" ? "rotate-180" : ""}`}>▼</span>
+          </button>
+
+          <div ref={accountRef} className="relative" onPointerDown={(e) => e.stopPropagation()}>
           <button
             type="button"
-            onClick={() => setOpen((prev) => !prev)}
+            onClick={() => setOpenMenu((prev) => (prev === "account" ? null : "account"))}
+            onPointerDown={(e) => e.stopPropagation()}
             className="flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold text-white/85 shadow-sm transition hover:border-white/30 hover:text-white hover:drop-shadow-[0_0_10px_rgba(99,102,241,0.35)]"
           >
             My Account
-            <span className={`text-xs transition ${open ? "rotate-180" : ""}`}>v</span>
+            <span className={`text-xs transition ${openMenu === "account" ? "rotate-180" : ""}`}>v</span>
           </button>
 
-          {open && (
-            <div className="absolute right-0 z-50 mt-2 w-64 overflow-hidden rounded-xl border border-zinc-200 bg-white/95 shadow-xl">
+          {openMenu === "account" && (
+            <div
+              onPointerDown={(e) => e.stopPropagation()}
+              className="absolute right-0 z-[60] mt-2 w-64 overflow-hidden rounded-2xl border border-white/12 bg-[#1B1436]/95 bg-clip-padding text-white shadow-[0_20px_60px_rgba(0,0,0,0.45)]"
+            >
               {checking ? (
-                <div className="px-4 py-3 text-sm text-zinc-600">
+                <div className="px-4 py-3 text-sm text-white/80">
                   Checking session...
                 </div>
               ) : user ? (
                 <div className="flex flex-col">
-                  <div className="border-b border-zinc-200 px-4 py-3">
-                    <p className="text-sm font-semibold text-zinc-900">
+                  <div className="border-b border-white/15 px-4 py-3">
+                    <p className="text-sm font-semibold text-white">
                       {user.username}
                     </p>
-                    <p className="text-xs text-zinc-600">{user.email}</p>
+                    <p className="text-xs text-white/80">{user.email}</p>
                   </div>
                   <Link
                     href="/account"
-                    onClick={() => setOpen(false)}
-                    className="px-4 py-3 text-sm font-semibold text-zinc-800 transition hover:bg-indigo-50 hover:text-indigo-700"
+                    onClick={() => setOpenMenu(null)}
+                    className="px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
                   >
                     Account settings
                   </Link>
                   <button
                     onClick={handleLogout}
-                    className="px-4 py-3 text-left text-sm font-semibold text-red-600 transition hover:bg-red-50"
+                    className="px-4 py-3 text-left text-sm font-semibold text-rose-100 transition hover:bg-white/10"
                   >
                     Logout
                   </button>
@@ -141,8 +185,8 @@ export default function Navbar() {
               ) : (
                 <Link
                   href="/login"
-                  onClick={() => setOpen(false)}
-                  className="block px-4 py-3 text-sm font-semibold text-indigo-700 transition hover:bg-indigo-50"
+                  onClick={() => setOpenMenu(null)}
+                  className="block px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
                 >
                   Login / Register
                 </Link>
@@ -150,6 +194,32 @@ export default function Navbar() {
             </div>
           )}
         </div>
+        </div>
+
+        {openMenu === "menu" && (
+          <div
+            id="mobile-nav-menu"
+            role="menu"
+            ref={mobileMenuRef}
+            onPointerDown={(e) => e.stopPropagation()}
+            className="absolute left-4 right-4 top-full z-[60] mt-2 rounded-2xl border border-white/12 bg-[#1B1436]/95 bg-clip-padding px-4 py-3 text-sm font-semibold text-white shadow-[0_20px_60px_rgba(0,0,0,0.45)] md:hidden"
+          >
+            <div className="flex flex-col divide-y divide-white/10">
+              <Link href="/" onClick={() => setOpenMenu(null)} className="py-2">
+                Home
+              </Link>
+              <Link href="/browse" onClick={() => setOpenMenu(null)} className="py-2">
+                Browse
+              </Link>
+              <Link href="/watchlist" onClick={() => setOpenMenu(null)} className="py-2">
+                My List
+              </Link>
+              <Link href="/#contact" scroll={false} onClick={() => setOpenMenu(null)} className="py-2">
+                Contact
+              </Link>
+            </div>
+          </div>
+        )}
       </div>
     </nav>
   );
