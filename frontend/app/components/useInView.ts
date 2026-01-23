@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type RefObject } from "react";
+import { useEffect, useRef, useState, type MutableRefObject } from "react";
 
 type UseInViewOptions = {
   threshold?: number;
@@ -6,7 +6,7 @@ type UseInViewOptions = {
 };
 
 type UseInViewReturn<T extends Element> = {
-  ref: RefObject<T | null>;
+  ref: MutableRefObject<T | null>;
   inView: boolean;
 };
 
@@ -19,6 +19,7 @@ export default function useInView<T extends Element>(
   useEffect(() => {
     const node = ref.current;
     if (!node) return;
+
     if (typeof IntersectionObserver === "undefined") {
       setInView(true);
       return;
@@ -35,7 +36,6 @@ export default function useInView<T extends Element>(
     );
 
     observer.observe(node);
-
     return () => observer.disconnect();
   }, [rootMargin, threshold]);
 
