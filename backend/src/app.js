@@ -37,8 +37,6 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-app.options("*", cors(corsOptions));
-
 app.use(express.json());
 app.use(cookieParser());
 
@@ -53,6 +51,11 @@ app.use("/api/contact", contactRoutes);
 
 app.get("/api/health", (req, res) => {
   res.json({ ok: true, message: "Backend is running." });
+});
+
+// Catch-all 404 (must come after all routes)
+app.use((req, res) => {
+  res.status(404).json({ error: "Not found" });
 });
 
 module.exports = app;
