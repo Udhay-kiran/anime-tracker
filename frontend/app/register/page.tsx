@@ -67,10 +67,8 @@ export default function RegisterPage() {
               type="email"
               required
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => setEmail(e.target.value.trim())}
               placeholder="Email"
-              pattern="^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$"
-              title="Enter a valid email (example@domain.com)"
               className="rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white shadow-sm backdrop-blur focus:border-indigo-400 focus:outline-none"
               autoComplete="email"
             />
