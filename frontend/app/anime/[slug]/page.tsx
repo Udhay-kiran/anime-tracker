@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { apiBase } from "@/lib/apiBase";
 
 type Anime = {
   _id: string;
@@ -32,6 +33,8 @@ const WATCH_STATUSES = [
   { value: "completed", label: "Completed" },
   { value: "dropped", label: "Dropped" },
 ];
+
+const API_BASE = apiBase();
 
 // Simple fade/slide-in on scroll.
 // Usage: <Reveal><YourBlock/></Reveal>
@@ -100,7 +103,7 @@ const formatRating = (value?: number | null) => {
 const fallback = (value?: string | number | null) =>
   value === null || value === undefined || value === "" ? "N/A" : value;
 
-// âœ… NEW: fallbacks + safe url helper
+// ✅ NEW: fallbacks + safe url helper
 const posterFallback = "/posters/fallback.jpg";
 const bannerFallback = "/banners/fallback.jpg";
 
@@ -132,7 +135,7 @@ export default function AnimePage() {
 
   const loadSession = async () => {
     try {
-      const res = await fetch("http://localhost:4000/api/auth/me", {
+      const res = await fetch(`${API_BASE}/api/auth/me`, {
         cache: "no-store",
         credentials: "include",
       });
@@ -151,7 +154,7 @@ export default function AnimePage() {
     setReviewsState("loading");
     setReviewsError(null);
     try {
-      const res = await fetch(`http://localhost:4000/api/reviews/anime/${animeId}`, {
+      const res = await fetch(`${API_BASE}/api/reviews/anime/${animeId}`, {
         cache: "no-store",
       });
       if (!res.ok) throw new Error(`Status ${res.status}`);
@@ -178,7 +181,7 @@ export default function AnimePage() {
         setStatus("loading");
         setError(null);
 
-        const response = await fetch(`http://localhost:4000/api/anime/slug/${slug}`, {
+        const response = await fetch(`${API_BASE}/api/anime/slug/${slug}`, {
           cache: "no-store",
           signal: controller.signal,
         });
@@ -218,7 +221,7 @@ export default function AnimePage() {
       try {
         setWatchState("loading");
         setWatchError(null);
-        const res = await fetch("http://localhost:4000/api/watchlist", {
+        const res = await fetch(`${API_BASE}/api/watchlist`, {
           cache: "no-store",
           signal: controller.signal,
           credentials: "include",
@@ -256,8 +259,8 @@ export default function AnimePage() {
     const inWatchlist = Boolean(watchStatus);
     const method = inWatchlist ? "PATCH" : "POST";
     const url = inWatchlist
-      ? `http://localhost:4000/api/watchlist/${anime._id}`
-      : "http://localhost:4000/api/watchlist";
+      ? `${API_BASE}/api/watchlist/${anime._id}`
+      : `${API_BASE}/api/watchlist`;
 
     try {
       const res = await fetch(url, {
@@ -295,7 +298,7 @@ export default function AnimePage() {
     setWatchState("loading");
     setWatchError(null);
     try {
-      const res = await fetch(`http://localhost:4000/api/watchlist/${anime._id}`, {
+      const res = await fetch(`${API_BASE}/api/watchlist/${anime._id}`, {
         method: "DELETE",
         credentials: "include",
       });
@@ -322,8 +325,8 @@ export default function AnimePage() {
     setReviewsError(null);
     try {
       const url = editingReviewId
-        ? `http://localhost:4000/api/reviews/${editingReviewId}`
-        : `http://localhost:4000/api/reviews/anime/${anime._id}`;
+        ? `${API_BASE}/api/reviews/${editingReviewId}`
+        : `${API_BASE}/api/reviews/anime/${anime._id}`;
       const method = editingReviewId ? "PATCH" : "POST";
       const res = await fetch(url, {
         method,
@@ -366,7 +369,7 @@ export default function AnimePage() {
     if (!anime?._id) return;
     setReviewsError(null);
     try {
-      const res = await fetch(`http://localhost:4000/api/reviews/${reviewId}`, {
+      const res = await fetch(`${API_BASE}/api/reviews/${reviewId}`, {
         method: "DELETE",
         credentials: "include",
       });
@@ -867,3 +870,6 @@ function Stat({ label, value }: { label: string; value: string | number }) {
     </div>
   );
 }
+
+
+

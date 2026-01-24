@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { apiBase } from "@/lib/apiBase";
 
 export const dynamic = "force-dynamic";
 
@@ -9,7 +10,7 @@ type HighlightsPayload = {
   comingSoon: unknown[];
 };
 
-const API_BASE = process.env.API_BASE || process.env.NEXT_PUBLIC_API_BASE || "http://localhost:4000";
+const API_BASE = apiBase();
 
 async function fetchCategory(url: string, key?: string) {
   const result: { items: unknown[]; status: number } = { items: [], status: 0 };

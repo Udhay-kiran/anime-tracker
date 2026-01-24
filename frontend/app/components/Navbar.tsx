@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { apiBase } from "@/lib/apiBase";
 
 type SessionUser = {
   username: string;
@@ -17,6 +18,7 @@ export default function Navbar() {
   const [checking, setChecking] = useState(true);
   const router = useRouter();
   const pathname = usePathname();
+  const API_BASE = apiBase();
   const accountRef = useRef<HTMLDivElement | null>(null);
   const mobileMenuRef = useRef<HTMLDivElement | null>(null);
   const mobileButtonRef = useRef<HTMLButtonElement | null>(null);
@@ -28,7 +30,7 @@ export default function Navbar() {
     const loadSession = async () => {
       setChecking(true);
       try {
-        const res = await fetch("http://localhost:4000/api/auth/me", {
+        const res = await fetch(`${API_BASE}/api/auth/me`, {
           credentials: "include",
           cache: "no-store",
         });
@@ -81,7 +83,7 @@ export default function Navbar() {
 
   const handleLogout = async () => {
     try {
-      await fetch("http://localhost:4000/api/auth/logout", {
+      await fetch(`${API_BASE}/api/auth/logout`, {
         method: "POST",
         credentials: "include",
       });
@@ -241,3 +243,4 @@ function NavLink({ href, label }: { href: string; label: string }) {
     </Link>
   );
 }
+

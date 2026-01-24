@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { apiBase } from "@/lib/apiBase";
 
 type AccountSummary = {
   user: { username: string; email: string; dob?: string };
@@ -16,6 +17,7 @@ type AccountSummary = {
 type LoadState = "loading" | "error" | "unauthorized" | "ready";
 
 export default function AccountPage() {
+  const API_BASE = apiBase();
   const [summary, setSummary] = useState<AccountSummary | null>(null);
   const [state, setState] = useState<LoadState>("loading");
   const [error, setError] = useState<string | null>(null);
@@ -28,7 +30,7 @@ export default function AccountPage() {
         setError(null);
         setState("loading");
 
-        const res = await fetch("http://localhost:4000/api/account/summary", {
+        const res = await fetch(`${API_BASE}/api/account/summary`, {
           credentials: "include",
           cache: "no-store",
           signal: controller.signal,
@@ -220,3 +222,4 @@ export default function AccountPage() {
     </div>
   );
 }
+

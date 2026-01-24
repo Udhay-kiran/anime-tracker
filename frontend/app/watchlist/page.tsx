@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { apiBase } from "@/lib/apiBase";
 import Link from "next/link";
 
 type Anime = {
@@ -60,12 +61,13 @@ export default function WatchlistPage() {
   const [mutatingId, setMutatingId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabKey>("favorites");
   const [visibleCount, setVisibleCount] = useState(CARDS_PER_BATCH);
+  const API_BASE = apiBase();
 
   const fetchWatchlist = async () => {
     try {
       setLoading(true);
       setError(null);
-      const res = await fetch("http://localhost:4000/api/watchlist", {
+      const res = await fetch(`${API_BASE}/api/watchlist`, {
         cache: "no-store",
         credentials: "include",
       });
@@ -139,7 +141,7 @@ const canLoadMore = visibleCount < filteredItems.length;
       )
     );
     try {
-      const res = await fetch(`http://localhost:4000/api/watchlist/${animeId}`, {
+      const res = await fetch(`${API_BASE}/api/watchlist/${animeId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -173,7 +175,7 @@ const canLoadMore = visibleCount < filteredItems.length;
     setError(null);
     setItems((prev) => prev.filter((item) => item.anime._id !== animeId));
     try {
-      const res = await fetch(`http://localhost:4000/api/watchlist/${animeId}`, {
+      const res = await fetch(`${API_BASE}/api/watchlist/${animeId}`, {
         method: "DELETE",
         credentials: "include",
       });
@@ -205,7 +207,7 @@ const canLoadMore = visibleCount < filteredItems.length;
       )
     );
     try {
-      const res = await fetch(`http://localhost:4000/api/watchlist/${animeId}/favorite`, {
+      const res = await fetch(`${API_BASE}/api/watchlist/${animeId}/favorite`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -467,3 +469,4 @@ function HeartIcon({ filled }: { filled: boolean }) {
     </svg>
   );
 }
+

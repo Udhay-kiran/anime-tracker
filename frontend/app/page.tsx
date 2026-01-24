@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { apiBase as apiBaseUrl } from "@/lib/apiBase";
 import HighlightAnimeCard from "./components/HighlightAnimeCard";
 import useInView from "./components/useInView";
 
@@ -231,7 +232,7 @@ export default function HomePage() {
   );
 
   const emailRegex = /^[\w.!#$%&'*+/=?^`{|}~-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
-  const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+  const apiBase = apiBaseUrl();
 
   async function handleContactSubmit(e: React.FormEvent) {
     e.preventDefault();

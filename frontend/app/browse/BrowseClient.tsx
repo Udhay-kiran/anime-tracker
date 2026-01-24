@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import AnimeCard, { AnimeCardAnime } from "@/components/AnimeCard";
+import { apiBase } from "@/lib/apiBase";
 
 type Anime = AnimeCardAnime & {
   synopsis: string;
@@ -18,6 +19,7 @@ type FetchState = "loading" | "error" | "ready";
 export default function BrowseClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const API_BASE = apiBase();
 
   const [anime, setAnime] = useState<Anime[]>([]);
   const [state, setState] = useState<FetchState>("loading");
@@ -45,7 +47,7 @@ export default function BrowseClient() {
         setState("loading");
         setError(null);
 
-        const response = await fetch("http://localhost:4000/api/anime", {
+        const response = await fetch(`${API_BASE}/api/anime`, {
           signal: controller.signal,
           cache: "no-store",
         });
@@ -73,7 +75,7 @@ export default function BrowseClient() {
     const controller = new AbortController();
     const loadWatchlist = async () => {
       try {
-        const res = await fetch("http://localhost:4000/api/watchlist", {
+        const res = await fetch(`${API_BASE}/api/watchlist`, {
           cache: "no-store",
           credentials: "include",
           signal: controller.signal,
@@ -216,8 +218,8 @@ export default function BrowseClient() {
       setWatchlistLoading((prev) => ({ ...prev, [animeId]: true }));
       const inList = Boolean(watchlist[animeId]);
       const url = inList
-        ? `http://localhost:4000/api/watchlist/${animeId}`
-        : "http://localhost:4000/api/watchlist";
+        ? `${API_BASE}/api/watchlist/${animeId}`
+        : `${API_BASE}/api/watchlist`;
       const options: RequestInit = inList
         ? { method: "DELETE", credentials: "include" }
         : {
@@ -293,7 +295,7 @@ export default function BrowseClient() {
           [animeId]: { status: "completed", favorite: nextFavorite },
         }));
         try {
-          const res = await fetch("http://localhost:4000/api/watchlist", {
+          const res = await fetch(`${API_BASE}/api/watchlist`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             credentials: "include",
@@ -325,7 +327,7 @@ export default function BrowseClient() {
           [animeId]: { status: "completed", favorite: nextFavorite },
         }));
         try {
-          const statusRes = await fetch(`http://localhost:4000/api/watchlist/${animeId}`, {
+          const statusRes = await fetch(`${API_BASE}/api/watchlist/${animeId}`, {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
             credentials: "include",
@@ -337,7 +339,7 @@ export default function BrowseClient() {
             return;
           }
           if (!statusRes.ok) throw new Error(`status ${statusRes.status}`);
-          const favRes = await fetch(`http://localhost:4000/api/watchlist/${animeId}/favorite`, {
+          const favRes = await fetch(`${API_BASE}/api/watchlist/${animeId}/favorite`, {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
             credentials: "include",
@@ -371,7 +373,7 @@ export default function BrowseClient() {
         [animeId]: { ...entry, favorite: nextFavorite },
       }));
       try {
-        const res = await fetch(`http://localhost:4000/api/watchlist/${animeId}/favorite`, {
+        const res = await fetch(`${API_BASE}/api/watchlist/${animeId}/favorite`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
@@ -711,3 +713,6 @@ export default function BrowseClient() {
     </main>
   );
 }
+
+
+
