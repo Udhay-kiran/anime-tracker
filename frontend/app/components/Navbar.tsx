@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { apiBase } from "@/lib/apiBase";
+import { apiFetch, saveToken } from "@/lib/api";
 
 type SessionUser = {
   username: string;
@@ -16,9 +16,9 @@ export default function Navbar() {
   const [openMenu, setOpenMenu] = useState<OpenMenu>(null);
   const [user, setUser] = useState<SessionUser | null>(null);
   const [checking, setChecking] = useState(true);
+  const [scrolled, setScrolled] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
-  const API_BASE = apiBase();
   const accountRef = useRef<HTMLDivElement | null>(null);
   const mobileMenuRef = useRef<HTMLDivElement | null>(null);
   const mobileButtonRef = useRef<HTMLButtonElement | null>(null);
@@ -30,8 +30,7 @@ export default function Navbar() {
     const loadSession = async () => {
       setChecking(true);
       try {
-        const res = await fetch(`${API_BASE}/api/auth/me`, {
-          credentials: "include",
+        const res = await apiFetch("/api/auth/me", {
           cache: "no-store",
         });
         if (cancelled) return;
@@ -81,15 +80,25 @@ export default function Navbar() {
     };
   }, []);
 
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 8);
+    };
+
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   const handleLogout = async () => {
     try {
-      await fetch(`${API_BASE}/api/auth/logout`, {
+      await apiFetch("/api/auth/logout", {
         method: "POST",
-        credentials: "include",
       });
     } catch {
       // ignore
     } finally {
+      saveToken(null);
       setUser(null);
       setOpenMenu(null);
       router.push("/");
@@ -97,7 +106,15 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="fixed top-0 w-full z-50 bg-black/40 border-b border-white/10 isolate">
+    <header
+      className={`fixed top-0 left-0 right-0 z-[999] isolate border-b transition-colors duration-200 ${
+        scrolled
+          ? "bg-[#070a12]/92 border-white/12 backdrop-blur-md"
+          : "bg-black/25 border-white/8 backdrop-blur-sm"
+      }`}
+    >
+      <div className="pointer-events-none absolute inset-0 bg-black/15" />
+
       {openMenu !== null && (
         <div
           className="fixed inset-0 z-40 bg-black/35"
@@ -106,7 +123,11 @@ export default function Navbar() {
           }}
         />
       )}
-      <div ref={navRef} className="relative z-50 mx-auto flex max-w-6xl items-center justify-between px-4 py-2">
+
+      <nav
+        ref={navRef}
+        className="relative z-50 mx-auto flex min-h-[72px] max-w-6xl items-center justify-between px-4 py-3"
+      >
         <div className="flex items-center gap-5 min-w-0">
           <Link
             href="/"
@@ -143,59 +164,59 @@ export default function Navbar() {
           </button>
 
           <div ref={accountRef} className="relative" onPointerDown={(e) => e.stopPropagation()}>
-          <button
-            type="button"
-            onClick={() => setOpenMenu((prev) => (prev === "account" ? null : "account"))}
-            onPointerDown={(e) => e.stopPropagation()}
-            className="flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold text-white/85 shadow-sm transition hover:border-white/30 hover:text-white hover:drop-shadow-[0_0_10px_rgba(99,102,241,0.35)]"
-          >
-            My Account
-            <span className={`text-xs transition ${openMenu === "account" ? "rotate-180" : ""}`}>v</span>
-          </button>
-
-          {openMenu === "account" && (
-            <div
+            <button
+              type="button"
+              onClick={() => setOpenMenu((prev) => (prev === "account" ? null : "account"))}
               onPointerDown={(e) => e.stopPropagation()}
-              className="absolute right-0 z-[60] mt-2 w-64 overflow-hidden rounded-2xl border border-white/12 bg-[#1B1436]/95 bg-clip-padding text-white shadow-[0_20px_60px_rgba(0,0,0,0.45)]"
+              className="flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold text-white/85 shadow-sm transition hover:border-white/30 hover:text-white hover:drop-shadow-[0_0_10px_rgba(99,102,241,0.35)]"
             >
-              {checking ? (
-                <div className="px-4 py-3 text-sm text-white/80">
-                  Checking session...
-                </div>
-              ) : user ? (
-                <div className="flex flex-col">
-                  <div className="border-b border-white/15 px-4 py-3">
-                    <p className="text-sm font-semibold text-white">
-                      {user.username}
-                    </p>
-                    <p className="text-xs text-white/80">{user.email}</p>
+              My Account
+              <span className={`text-xs transition ${openMenu === "account" ? "rotate-180" : ""}`}>v</span>
+            </button>
+
+            {openMenu === "account" && (
+              <div
+                onPointerDown={(e) => e.stopPropagation()}
+                className="absolute right-0 z-[60] mt-2 w-64 overflow-hidden rounded-2xl border border-white/12 bg-[#1B1436]/95 bg-clip-padding text-white shadow-[0_20px_60px_rgba(0,0,0,0.45)]"
+              >
+                {checking ? (
+                  <div className="px-4 py-3 text-sm text-white/80">
+                    Checking session...
                   </div>
+                ) : user ? (
+                  <div className="flex flex-col">
+                    <div className="border-b border-white/15 px-4 py-3">
+                      <p className="text-sm font-semibold text-white">
+                        {user.username}
+                      </p>
+                      <p className="text-xs text-white/80">{user.email}</p>
+                    </div>
+                    <Link
+                      href="/account"
+                      onClick={() => setOpenMenu(null)}
+                      className="px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
+                    >
+                      Account settings
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      className="px-4 py-3 text-left text-sm font-semibold text-rose-100 transition hover:bg-white/10"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                ) : (
                   <Link
-                    href="/account"
+                    href="/login"
                     onClick={() => setOpenMenu(null)}
-                    className="px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
+                    className="block px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
                   >
-                    Account settings
+                    Login / Register
                   </Link>
-                  <button
-                    onClick={handleLogout}
-                    className="px-4 py-3 text-left text-sm font-semibold text-rose-100 transition hover:bg-white/10"
-                  >
-                    Logout
-                  </button>
-                </div>
-              ) : (
-                <Link
-                  href="/login"
-                  onClick={() => setOpenMenu(null)}
-                  className="block px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
-                >
-                  Login / Register
-                </Link>
-              )}
-            </div>
-          )}
-        </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
 
         {openMenu === "menu" && (
@@ -222,8 +243,8 @@ export default function Navbar() {
             </div>
           </div>
         )}
-      </div>
-    </nav>
+      </nav>
+    </header>
   );
 }
 

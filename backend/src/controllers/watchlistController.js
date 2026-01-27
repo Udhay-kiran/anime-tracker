@@ -26,6 +26,8 @@ function toPayload(doc) {
       releaseYear: doc.animeId?.releaseYear,
       avgRating: doc.animeId?.avgRating,
       status: doc.animeId?.status,
+      posterUrl: doc.animeId?.posterUrl,
+      localPoster: doc.animeId?.localPoster,
     },
   };
 }
@@ -35,7 +37,7 @@ async function getWatchlist(req, res) {
   try {
     const items = await Watchlist.find({ userId: req.user.id }).populate(
       "animeId",
-      "title slug synopsis releaseYear avgRating status"
+      "title slug synopsis releaseYear avgRating status posterUrl localPoster"
     );
     res.json(items.map(toPayload));
   } catch (err) {
@@ -51,9 +53,6 @@ async function addWatchlistItem(req, res) {
   if (!validateStatus(status)) return res.status(400).json({ message: "Invalid status value" });
   if (!validateFavorite(favorite))
     return res.status(400).json({ message: "favorite must be boolean" });
-  if (favorite && status !== "completed")
-    return res.status(400).json({ message: "Favorites are allowed only for completed items" });
-
   try {
     const anime = await Anime.findById(animeId);
     if (!anime) return res.status(404).json({ message: "Anime not found" });
@@ -62,7 +61,10 @@ async function addWatchlistItem(req, res) {
     if (existing) return res.status(409).json({ message: "Anime already in watchlist" });
 
     const item = await Watchlist.create({ userId: req.user.id, animeId, status, favorite });
-    await item.populate("animeId", "title slug synopsis releaseYear avgRating status");
+    await item.populate(
+      "animeId",
+      "title slug synopsis releaseYear avgRating status posterUrl localPoster"
+    );
 
     return res.status(201).json(toPayload(item));
   } catch (err) {
@@ -89,19 +91,16 @@ async function updateWatchlistItem(req, res) {
 
     if (status !== undefined) {
       item.status = status;
-      if (status !== "completed") {
-        item.favorite = false;
-      }
     }
     if (favorite !== undefined) {
-      if (favorite && item.status !== "completed") {
-        return res.status(400).json({ message: "Only completed items can be favorited" });
-      }
       item.favorite = favorite;
     }
 
     await item.save();
-    await item.populate("animeId", "title slug synopsis releaseYear avgRating status");
+    await item.populate(
+      "animeId",
+      "title slug synopsis releaseYear avgRating status posterUrl localPoster"
+    );
     return res.json(toPayload(item));
   } catch (err) {
     return res.status(500).json({ message: "Failed to update watchlist" });
@@ -120,13 +119,12 @@ async function updateWatchlistFavorite(req, res) {
 
     if (!item) return res.status(404).json({ message: "Watchlist item not found" });
 
-    if (favorite && item.status !== "completed") {
-      return res.status(400).json({ message: "Only completed items can be favorited" });
-    }
-
     item.favorite = favorite;
     await item.save();
-    await item.populate("animeId", "title slug synopsis releaseYear avgRating status");
+    await item.populate(
+      "animeId",
+      "title slug synopsis releaseYear avgRating status posterUrl localPoster"
+    );
 
     return res.json(toPayload(item));
   } catch (err) {

@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import AnimeCard, { AnimeCardAnime } from "@/components/AnimeCard";
 import { apiBase } from "@/lib/apiBase";
+import { apiFetch } from "@/lib/api";
 
 type Anime = AnimeCardAnime & {
   synopsis: string;
@@ -75,9 +76,8 @@ export default function BrowseClient() {
     const controller = new AbortController();
     const loadWatchlist = async () => {
       try {
-        const res = await fetch(`${API_BASE}/api/watchlist`, {
+        const res = await apiFetch(`${API_BASE}/api/watchlist`, {
           cache: "no-store",
-          credentials: "include",
           signal: controller.signal,
         });
         if (res.status === 401) {
@@ -221,16 +221,15 @@ export default function BrowseClient() {
         ? `${API_BASE}/api/watchlist/${animeId}`
         : `${API_BASE}/api/watchlist`;
       const options: RequestInit = inList
-        ? { method: "DELETE", credentials: "include" }
+        ? { method: "DELETE" }
         : {
             method: "POST",
-            credentials: "include",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ animeId, status: "planned" }),
           };
 
       try {
-        const res = await fetch(url, options);
+        const res = await apiFetch(url, options);
         if (res.status === 401) {
           setIsAuthed(false);
           router.push("/login");
@@ -264,7 +263,7 @@ export default function BrowseClient() {
         setWatchlistLoading((prev) => ({ ...prev, [animeId]: false }));
       }
     },
-    [isAuthed, router, watchlist]
+    [API_BASE, isAuthed, router, watchlist]
   );
 
   const toggleFavorite = useCallback(
@@ -290,16 +289,16 @@ export default function BrowseClient() {
         });
 
       if (!entry) {
+        const optimisticStatus = "planned";
         setWatchlist((prev) => ({
           ...prev,
-          [animeId]: { status: "completed", favorite: nextFavorite },
+          [animeId]: { status: optimisticStatus, favorite: nextFavorite },
         }));
         try {
-          const res = await fetch(`${API_BASE}/api/watchlist`, {
+          const res = await apiFetch(`${API_BASE}/api/watchlist`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            credentials: "include",
-            body: JSON.stringify({ animeId, status: "completed", favorite: nextFavorite }),
+            body: JSON.stringify({ animeId, status: optimisticStatus, favorite: nextFavorite }),
           });
           if (res.status === 401) {
             setIsAuthed(false);
@@ -310,52 +309,8 @@ export default function BrowseClient() {
           const data: WatchlistResponseItem = await res.json();
           setWatchlist((prev) => ({
             ...prev,
-            [animeId]: { status: data.status ?? "completed", favorite: Boolean(data.favorite) },
-          }));
-        } catch (err) {
-          console.error(err);
-          revert();
-        } finally {
-          setFavoriteLoading((prev) => ({ ...prev, [animeId]: false }));
-        }
-        return;
-      }
-
-      if (entry.status !== "completed") {
-        setWatchlist((prev) => ({
-          ...prev,
-          [animeId]: { status: "completed", favorite: nextFavorite },
-        }));
-        try {
-          const statusRes = await fetch(`${API_BASE}/api/watchlist/${animeId}`, {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
-            body: JSON.stringify({ status: "completed" }),
-          });
-          if (statusRes.status === 401) {
-            setIsAuthed(false);
-            router.push("/login");
-            return;
-          }
-          if (!statusRes.ok) throw new Error(`status ${statusRes.status}`);
-          const favRes = await fetch(`${API_BASE}/api/watchlist/${animeId}/favorite`, {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
-            body: JSON.stringify({ favorite: nextFavorite }),
-          });
-          if (favRes.status === 401) {
-            setIsAuthed(false);
-            router.push("/login");
-            return;
-          }
-          if (!favRes.ok) throw new Error(`status ${favRes.status}`);
-          const data: WatchlistResponseItem = await favRes.json();
-          setWatchlist((prev) => ({
-            ...prev,
             [animeId]: {
-              status: data.status ?? "completed",
+              status: data.status ?? optimisticStatus,
               favorite: Boolean(data.favorite),
             },
           }));
@@ -373,10 +328,9 @@ export default function BrowseClient() {
         [animeId]: { ...entry, favorite: nextFavorite },
       }));
       try {
-        const res = await fetch(`${API_BASE}/api/watchlist/${animeId}/favorite`, {
+        const res = await apiFetch(`${API_BASE}/api/watchlist/${animeId}/favorite`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          credentials: "include",
           body: JSON.stringify({ favorite: nextFavorite }),
         });
         if (res.status === 401) {
@@ -400,7 +354,7 @@ export default function BrowseClient() {
         setFavoriteLoading((prev) => ({ ...prev, [animeId]: false }));
       }
     },
-    [isAuthed, router, watchlist]
+    [API_BASE, isAuthed, router, watchlist]
   );
 
   const handleLoadMore = useCallback(() => {

@@ -2,20 +2,16 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { apiBase } from "@/lib/apiBase";
+import { apiFetch, saveToken } from "@/lib/api";
 
 type AuthState = "loading" | "authenticated" | "unauthenticated" | "error";
 
 export default function AuthButtons() {
   const [state, setState] = useState<AuthState>("loading");
-  const API_BASE = apiBase();
 
   const checkSession = async () => {
     try {
-      const res = await fetch(`${API_BASE}/api/auth/me`, {
-        credentials: "include",
-        cache: "no-store",
-      });
+      const res = await apiFetch("/api/auth/me", { cache: "no-store" });
       setState(res.ok ? "authenticated" : "unauthenticated");
     } catch {
       setState("error");
@@ -28,10 +24,8 @@ export default function AuthButtons() {
 
   const logout = async () => {
     setState("loading");
-    await fetch(`${API_BASE}/api/auth/logout`, {
-      method: "POST",
-      credentials: "include",
-    });
+    saveToken(null);
+    await apiFetch("/api/auth/logout", { method: "POST" });
     setState("unauthenticated");
   };
 

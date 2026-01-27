@@ -74,7 +74,7 @@ async function register(req, res) {
     return res
       .cookie(COOKIE_NAME, token, COOKIE_OPTIONS)
       .status(201)
-      .json({ user: sanitizeUser(user) });
+      .json({ token, user: sanitizeUser(user) });
   } catch (err) {
     return res.status(500).json({ message: "Registration failed" });
   }
@@ -108,7 +108,7 @@ async function login(req, res) {
 
     return res
       .cookie(COOKIE_NAME, token, COOKIE_OPTIONS)
-      .json({ user: sanitizeUser(user) });
+      .json({ token, user: sanitizeUser(user) });
   } catch (err) {
     return res.status(500).json({ message: "Login failed" });
   }

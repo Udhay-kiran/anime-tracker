@@ -3,11 +3,10 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { apiBase } from "@/lib/apiBase";
+import { apiFetch, saveToken } from "@/lib/api";
 
 export default function RegisterPage() {
   const router = useRouter();
-  const API_BASE = apiBase();
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -26,9 +25,8 @@ export default function RegisterPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${API_BASE}/api/auth/register`, {
+      const res = await apiFetch("/api/auth/register", {
         method: "POST",
-        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, email, password, dob }),
       });
@@ -37,6 +35,8 @@ export default function RegisterPage() {
           res.status === 409 ? "Email or username already registered" : `Error ${res.status}`;
         throw new Error(msg);
       }
+      const data = (await res.json().catch(() => null)) as { token?: string } | null;
+      if (data?.token) saveToken(data.token);
       router.push("/account");
     } catch (err) {
       setError((err as Error).message || "Registration failed");

@@ -2,12 +2,11 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { apiBase } from "@/lib/apiBase";
+import { apiFetch, saveToken } from "@/lib/api";
 import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
   const router = useRouter();
-  const API_BASE = apiBase();
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -18,9 +17,8 @@ export default function LoginPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${API_BASE}/api/auth/login`, {
+      const res = await apiFetch("/api/auth/login", {
         method: "POST",
-        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ identifier, password }),
       });
@@ -28,6 +26,8 @@ export default function LoginPage() {
         const msg = res.status === 401 ? "Invalid credentials" : `Error ${res.status}`;
         throw new Error(msg);
       }
+      const data = (await res.json().catch(() => null)) as { token?: string } | null;
+      if (data?.token) saveToken(data.token);
       router.push("/account");
     } catch (err) {
       setError((err as Error).message || "Login failed");

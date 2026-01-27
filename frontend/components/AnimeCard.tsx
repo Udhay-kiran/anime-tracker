@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { MouseEvent } from "react";
+import { ChangeEvent, MouseEvent } from "react";
 
 export type AnimeCardAnime = {
   _id?: string;
@@ -15,6 +15,9 @@ export type AnimeCardAnime = {
   posterUrl?: string;
 };
 
+type Mode = "browse" | "mylist";
+type StatusOption = { value: string; label: string };
+
 type Props = {
   anime: AnimeCardAnime;
   isWatchlisted: boolean;
@@ -24,6 +27,17 @@ type Props = {
   onToggleFavorite: (animeId: string) => void | Promise<void>;
   showFavorite?: boolean;
   statusLabel?: string;
+  mode?: Mode;
+  primaryActionLabel?: string;
+  primaryActionDisabled?: boolean;
+  showStatusDropdown?: boolean;
+  statusOptions?: StatusOption[];
+  statusValue?: string;
+  onStatusChange?: (value: string) => void;
+  showRemoveButton?: boolean;
+  removeLabel?: string;
+  onRemove?: () => void;
+  actionsDisabled?: boolean;
 };
 
 const STATUS_LABELS: Record<string, string> = {
@@ -54,8 +68,24 @@ export default function AnimeCard({
   onToggleFavorite,
   showFavorite = true,
   statusLabel,
+  mode = "browse",
+  primaryActionLabel,
+  primaryActionDisabled,
+  showStatusDropdown = false,
+  statusOptions,
+  statusValue,
+  onStatusChange,
+  showRemoveButton = false,
+  removeLabel,
+  onRemove,
+  actionsDisabled = false,
 }: Props) {
   const animeId = anime._id ?? anime.slug;
+  const isMyList = mode === "mylist";
+  const controlsDisabled = actionsDisabled || Boolean(watchlistLoading);
+  const primaryLabel = primaryActionLabel ?? (isWatchlisted ? "In Watchlist" : "Add to Watchlist");
+  const controlCols =
+    showStatusDropdown && showRemoveButton ? "grid-cols-2" : "grid-cols-1";
 
   const handleWatchlist = (e: MouseEvent) => {
     e.preventDefault();
@@ -69,6 +99,19 @@ export default function AnimeCard({
     e.stopPropagation();
     if (!animeId) return;
     onToggleFavorite(animeId);
+  };
+
+  const handleStatusSelect = (e: ChangeEvent<HTMLSelectElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!onStatusChange) return;
+    onStatusChange(e.target.value);
+  };
+
+  const handleRemove = (e: MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onRemove?.();
   };
 
   return (
@@ -112,8 +155,14 @@ export default function AnimeCard({
           </div>
 
           <div className="mt-2 flex min-w-0 flex-1 flex-col">
-            <h2 className="text-sm font-semibold leading-tight text-white line-clamp-1">{anime.title}</h2>
-            <div className="mt-1 h-[18px] overflow-hidden flex flex-wrap gap-1 text-[10px] text-white/80">
+            <h2
+              className={`text-sm font-semibold leading-tight text-white ${
+                isMyList ? "line-clamp-2" : "line-clamp-1"
+              }`}
+            >
+              {anime.title}
+            </h2>
+            <div className="mt-1 flex h-[18px] flex-wrap gap-1 overflow-hidden text-[10px] text-white/80">
               <span className="rounded-md bg-white/10 px-2 py-0.5 ring-1 ring-white/15">
                 {anime.releaseYear ?? "TBD"}
               </span>
@@ -125,18 +174,47 @@ export default function AnimeCard({
               </span>
             </div>
             <div className="mt-auto pt-2">
-              <button
-                type="button"
-                onClick={handleWatchlist}
-                disabled={watchlistLoading}
-                className={`h-8 w-full rounded-lg px-3 text-xs font-semibold shadow-sm transition ${
-                  isWatchlisted
-                    ? "bg-indigo-600 text-white hover:bg-indigo-700"
-                    : "bg-white/10 text-white/90 ring-1 ring-white/15 hover:ring-indigo-300/30"
-                } ${watchlistLoading ? "opacity-70" : ""}`}
-              >
-                {isWatchlisted ? "In Watchlist" : "Add to Watchlist"}
-              </button>
+              {isMyList ? (
+                <div className={`grid gap-2 ${controlCols}`}>
+                  {showStatusDropdown ? (
+                    <select
+                      className="min-h-[44px] w-full rounded-xl border border-white/20 bg-black/40 px-3 py-2 text-[11px] font-semibold text-white shadow-sm transition focus:border-indigo-400 focus:outline-none disabled:opacity-60"
+                      value={statusValue}
+                      onChange={handleStatusSelect}
+                      disabled={controlsDisabled}
+                    >
+                      {statusOptions?.map((option) => (
+                        <option className="bg-black text-white" key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  ) : null}
+                  {showRemoveButton ? (
+                    <button
+                      type="button"
+                      onClick={handleRemove}
+                      disabled={controlsDisabled}
+                      className="min-h-[44px] w-full rounded-xl border border-red-300/50 bg-red-500/10 px-3 py-2 text-xs font-semibold text-red-100 transition hover:bg-red-500/20 disabled:opacity-60"
+                    >
+                      {removeLabel ?? "Remove"}
+                    </button>
+                  ) : null}
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleWatchlist}
+                  disabled={watchlistLoading || primaryActionDisabled}
+                  className={`h-8 w-full rounded-lg px-3 text-xs font-semibold shadow-sm transition ${
+                    isWatchlisted
+                      ? "bg-indigo-600 text-white hover:bg-indigo-700"
+                      : "bg-white/10 text-white/90 ring-1 ring-white/15 hover:ring-indigo-300/30"
+                  } ${watchlistLoading || primaryActionDisabled ? "opacity-70" : ""}`}
+                >
+                  {primaryLabel}
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -169,7 +247,11 @@ export default function AnimeCard({
         </div>
 
         <div className="flex items-start justify-between gap-3">
-          <h2 className="text-lg font-semibold text-white group-hover:text-indigo-300">
+          <h2
+            className={`text-lg font-semibold text-white group-hover:text-indigo-300 ${
+              isMyList ? "line-clamp-2" : ""
+            }`}
+          >
             {anime.title}
           </h2>
         </div>
@@ -230,18 +312,47 @@ export default function AnimeCard({
           )}
 
           <div className="flex justify-end">
-            <button
-              type="button"
-              onClick={handleWatchlist}
-              disabled={watchlistLoading}
-              className={`pointer-events-auto w-full rounded-lg px-4 py-2 text-sm font-semibold shadow-sm transition md:w-auto ${
-                isWatchlisted
-                  ? "bg-indigo-600 text-white hover:bg-indigo-700"
-                  : "bg-black/30 text-white/85 ring-1 ring-white/10 hover:-translate-y-0.5 hover:ring-indigo-400/30 hover:text-white"
-              } ${watchlistLoading ? "opacity-70" : ""} opacity-100 md:opacity-0 md:pointer-events-auto md:group-hover:opacity-100 md:group-hover:pointer-events-auto backdrop-blur-md`}
-            >
-              {isWatchlisted ? "In Watchlist" : "Add to Watchlist"}
-            </button>
+            {isMyList ? (
+              <div className={`pointer-events-auto grid w-full gap-2 ${controlCols}`}>
+                {showStatusDropdown ? (
+                  <select
+                    className="min-h-[44px] w-full rounded-xl border border-white/20 bg-black/40 px-3 py-2 text-sm font-semibold text-white shadow-sm transition focus:border-indigo-400 focus:outline-none disabled:opacity-60"
+                    value={statusValue}
+                    onChange={handleStatusSelect}
+                    disabled={controlsDisabled}
+                  >
+                    {statusOptions?.map((option) => (
+                      <option className="bg-black text-white" key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                ) : null}
+                {showRemoveButton ? (
+                  <button
+                    type="button"
+                    onClick={handleRemove}
+                    disabled={controlsDisabled}
+                    className="min-h-[44px] w-full rounded-xl border border-red-300/50 bg-red-500/10 px-3 py-2 text-sm font-semibold text-red-100 transition hover:bg-red-500/20 disabled:opacity-60"
+                  >
+                    {removeLabel ?? "Remove"}
+                  </button>
+                ) : null}
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={handleWatchlist}
+                disabled={watchlistLoading || primaryActionDisabled}
+                className={`pointer-events-auto w-full rounded-lg px-4 py-2 text-sm font-semibold shadow-sm transition md:w-auto ${
+                  isWatchlisted
+                    ? "bg-indigo-600 text-white hover:bg-indigo-700"
+                    : "bg-black/30 text-white/85 ring-1 ring-white/10 hover:-translate-y-0.5 hover:ring-indigo-400/30 hover:text-white"
+                } ${watchlistLoading || primaryActionDisabled ? "opacity-70" : ""} opacity-100 md:opacity-0 md:pointer-events-auto md:group-hover:opacity-100 md:group-hover:pointer-events-auto backdrop-blur-md`}
+              >
+                {primaryLabel}
+              </button>
+            )}
           </div>
         </div>
       </Link>
