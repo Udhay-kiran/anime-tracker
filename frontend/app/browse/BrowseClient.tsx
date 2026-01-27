@@ -15,6 +15,15 @@ type Anime = AnimeCardAnime & {
 
 type WatchStatus = "planned" | "watching" | "completed" | "dropped";
 type WatchlistEntry = { status: WatchStatus; favorite: boolean };
+
+function toWatchStatus(value: unknown): WatchStatus {
+  const v = String(value || "").toLowerCase();
+  if (v === "watching" || v === "watching now") return "watching";
+  if (v === "completed" || v === "finished") return "completed";
+  if (v === "dropped") return "dropped";
+  if (v === "planned") return "planned";
+  return "planned";
+}
 type WatchlistResponseItem = { anime: Anime; status: string; favorite?: boolean };
 
 type FetchState = "loading" | "error" | "ready";
@@ -93,7 +102,8 @@ export default function BrowseClient() {
         const map: Record<string, WatchlistEntry> = {};
         data.forEach((item) => {
           const id = item.anime?._id;
-          if (id) map[id] = { status: item.status, favorite: Boolean(item.favorite) };
+          if (id)
+            map[id] = { status: toWatchStatus(item.status), favorite: Boolean(item.favorite) };
         });
         setWatchlist(map);
         setIsAuthed(true);
@@ -349,7 +359,7 @@ export default function BrowseClient() {
           setWatchlist((prev) => ({
             ...prev,
             [key]: {
-              status: (data.status as WatchStatus) ?? "planned",
+              status: toWatchStatus(data.status),
               favorite: Boolean(data.favorite),
             },
           }));
@@ -382,7 +392,7 @@ export default function BrowseClient() {
         setWatchlist((prev) => ({
           ...prev,
           [key]: {
-            status: (data.status as WatchStatus) ?? entry.status,
+            status: toWatchStatus(data.status ?? entry.status),
             favorite: Boolean(data.favorite),
           },
         }));
@@ -781,4 +791,3 @@ export default function BrowseClient() {
     </main>
   );
 }
-
