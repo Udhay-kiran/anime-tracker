@@ -301,7 +301,7 @@ export default function BrowseClient() {
           setWatchlist((prev) => ({
             ...prev,
             [animeId]: {
-              status: payload?.status ?? "planned",
+              status: toWatchStatus(payload?.status ?? "planned"),
               favorite: Boolean(payload?.favorite),
             },
           }));
