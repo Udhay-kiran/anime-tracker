@@ -13,7 +13,8 @@ type Anime = AnimeCardAnime & {
   status: string;
 };
 
-type WatchlistEntry = { status?: string; favorite: boolean };
+type WatchStatus = "planned" | "watching" | "completed" | "dropped";
+type WatchlistEntry = { status: WatchStatus; favorite: boolean };
 type WatchlistResponseItem = { anime: Anime; status: string; favorite?: boolean };
 
 type FetchState = "loading" | "error" | "ready";
@@ -307,29 +308,30 @@ export default function BrowseClient() {
   const toggleFavorite = useCallback(
     async (animeId: string) => {
       if (!animeId) return;
+      const key = String(animeId);
       if (isAuthed === false) {
         router.push("/login");
         return;
       }
 
-      const entry = watchlist[animeId];
+      const entry = watchlist[key];
       const nextFavorite = !(entry?.favorite ?? false);
-      setFavoriteLoading((prev) => ({ ...prev, [animeId]: true }));
+      setFavoriteLoading((prev) => ({ ...prev, [key]: true }));
 
       const revert = () =>
         setWatchlist((prev) => {
           if (!entry) {
             const next = { ...prev };
-            delete next[animeId];
+            delete next[key];
             return next;
           }
-          return { ...prev, [animeId]: entry };
+          return { ...prev, [key]: entry };
         });
 
       if (!entry) {
         setWatchlist((prev) => ({
           ...prev,
-          [animeId]: { status: entry?.status, favorite: nextFavorite },
+          [key]: { status: "planned", favorite: nextFavorite },
         }));
         try {
           const res = await apiFetch(`${API_BASE}/api/watchlist`, {
@@ -346,8 +348,8 @@ export default function BrowseClient() {
           const data: WatchlistResponseItem = await res.json();
           setWatchlist((prev) => ({
             ...prev,
-            [animeId]: {
-              status: data.status,
+            [key]: {
+              status: (data.status as WatchStatus) ?? "planned",
               favorite: Boolean(data.favorite),
             },
           }));
@@ -355,14 +357,14 @@ export default function BrowseClient() {
           console.error(err);
           revert();
         } finally {
-          setFavoriteLoading((prev) => ({ ...prev, [animeId]: false }));
+          setFavoriteLoading((prev) => ({ ...prev, [key]: false }));
         }
         return;
       }
 
       setWatchlist((prev) => ({
         ...prev,
-        [animeId]: { ...entry, favorite: nextFavorite },
+        [key]: { ...entry, favorite: nextFavorite },
       }));
       try {
         const res = await apiFetch(`${API_BASE}/api/watchlist/${animeId}/favorite`, {
@@ -379,8 +381,8 @@ export default function BrowseClient() {
         const data: WatchlistResponseItem = await res.json();
         setWatchlist((prev) => ({
           ...prev,
-          [animeId]: {
-            status: data.status ?? entry.status,
+          [key]: {
+            status: (data.status as WatchStatus) ?? entry.status,
             favorite: Boolean(data.favorite),
           },
         }));
@@ -388,7 +390,7 @@ export default function BrowseClient() {
         console.error(err);
         revert();
       } finally {
-        setFavoriteLoading((prev) => ({ ...prev, [animeId]: false }));
+        setFavoriteLoading((prev) => ({ ...prev, [key]: false }));
       }
     },
     [API_BASE, isAuthed, router, watchlist]
@@ -779,7 +781,4 @@ export default function BrowseClient() {
     </main>
   );
 }
-
-
-
 
