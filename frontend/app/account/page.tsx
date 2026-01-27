@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { apiFetch, saveToken } from "@/lib/api";
+import { apiFetch, apiUrl, saveToken } from "@/lib/api";
 
 type AccountSummary = {
   user: { username: string; email: string; dob?: string };
@@ -36,7 +36,7 @@ export default function AccountPage() {
         setError(null);
         setState("loading");
 
-        const res = await apiFetch("/api/account/summary", {
+        const res = await apiFetch(apiUrl("/api/account/summary"), {
           cache: "no-store",
           signal: controller.signal,
         });
@@ -74,7 +74,7 @@ export default function AccountPage() {
     setDeleteLoading(true);
     setDeleteError(null);
     try {
-      const res = await apiFetch("/api/auth/me", {
+      const res = await apiFetch(apiUrl("/api/auth/me"), {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ password: deletePassword }),
@@ -92,7 +92,7 @@ export default function AccountPage() {
       }
 
       saveToken(null);
-      await apiFetch("/api/auth/logout", { method: "POST" }).catch(() => {});
+      await apiFetch(apiUrl("/api/auth/logout"), { method: "POST" }).catch(() => {});
       setSuccessMessage("Account deleted. Redirecting…");
       setDeleteLoading(false);
       setDeleteOpen(false);

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { apiFetch, saveToken } from "@/lib/api";
+import { apiFetch, apiUrl, saveToken } from "@/lib/api";
 
 function ChevronDown({ className }: { className?: string }) {
   return (
@@ -49,7 +49,7 @@ export default function Navbar() {
     const loadSession = async () => {
       setChecking(true);
       try {
-        const res = await apiFetch("/api/auth/me", {
+        const res = await apiFetch(apiUrl("/api/auth/me"), {
           cache: "no-store",
         });
         if (cancelled) return;
@@ -111,7 +111,7 @@ export default function Navbar() {
 
   const handleLogout = async () => {
     try {
-      await apiFetch("/api/auth/logout", {
+      await apiFetch(apiUrl("/api/auth/logout"), {
         method: "POST",
       });
     } catch {

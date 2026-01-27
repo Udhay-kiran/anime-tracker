@@ -3,8 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import AnimeCard, { AnimeCardAnime } from "@/components/AnimeCard";
-import { apiBase } from "@/lib/apiBase";
-import { apiFetch } from "@/lib/api";
+import { apiFetch, apiUrl } from "@/lib/api";
 import Link from "next/link";
 
 export type TabKey = "favorites" | "planned" | "watching" | "completed" | "dropped";
@@ -56,19 +55,18 @@ export default function WatchlistClient({ initialTab }: Props) {
   const [mutatingId, setMutatingId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabKey>(initialTab);
   const [visibleCount, setVisibleCount] = useState(CARDS_PER_BATCH);
-  const API_BASE = apiBase();
 
   const fetchWatchlist = async () => {
     try {
       setLoading(true);
       setError(null);
-      const res = await apiFetch(${API_BASE}/api/watchlist, {
+      const res = await apiFetch(apiUrl("/api/watchlist"), {
         cache: "no-store",
       });
       if (res.status === 401) {
         throw new Error("Please log in to view your watchlist");
       }
-      if (!res.ok) throw new Error(Request failed ());
+      if (!res.ok) throw new Error(`Request failed (${res.status})`);
       const data: WatchlistItem[] = await res.json();
       setItems(data.map((item) => ({ ...item, favorite: Boolean(item.favorite) })));
     } catch (err) {
@@ -92,7 +90,7 @@ export default function WatchlistClient({ initialTab }: Props) {
   }, [activeTab]);
 
   useEffect(() => {
-    router.replace(/watchlist?tab=, { scroll: false });
+    router.replace(`/watchlist?tab=${activeTab}`, { scroll: false });
   }, [activeTab, router]);
 
   const filteredItems = useMemo(() => {
@@ -137,13 +135,13 @@ export default function WatchlistClient({ initialTab }: Props) {
       )
     );
     try {
-      const res = await apiFetch(${API_BASE}/api/watchlist//status, {
+      const res = await apiFetch(apiUrl(`/api/watchlist/${animeId}/status`), {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status }),
       });
       if (res.status === 401) throw new Error("Please log in to update your list");
-      if (!res.ok) throw new Error(Update failed ());
+      if (!res.ok) throw new Error(`Update failed (${res.status})`);
       const data: WatchlistItem = await res.json();
       setItems((prev) =>
         prev.map((item) =>
@@ -170,12 +168,12 @@ export default function WatchlistClient({ initialTab }: Props) {
     setError(null);
     setItems((prev) => prev.filter((item) => item.anime._id !== animeId));
     try {
-      const res = await apiFetch(${API_BASE}/api/watchlist/, {
+      const res = await apiFetch(apiUrl(`/api/watchlist/${animeId}`), {
         method: "DELETE",
       });
       if (res.status === 401) throw new Error("Please log in to update your list");
       if (!res.ok && res.status !== 404) {
-        throw new Error(Delete failed ());
+        throw new Error(`Delete failed (${res.status})`);
       }
     } catch (err) {
       setError((err as Error).message || "Failed to remove item");
@@ -196,13 +194,13 @@ export default function WatchlistClient({ initialTab }: Props) {
       )
     );
     try {
-      const res = await apiFetch(${API_BASE}/api/watchlist//favorite, {
+      const res = await apiFetch(apiUrl(`/api/watchlist/${animeId}/favorite`), {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ favorite: nextFavorite }),
       });
       if (res.status === 401) throw new Error("Please log in to update your list");
-      if (!res.ok) throw new Error(Update failed ());
+      if (!res.ok) throw new Error(`Update failed (${res.status})`);
       const data: WatchlistItem = await res.json();
       setItems((prev) =>
         prev.map((item) =>
@@ -221,12 +219,12 @@ export default function WatchlistClient({ initialTab }: Props) {
 
   return (
     <>
-      <style jsx global>{
+      <style jsx global>{`
         .page-overlay {
           display: none !important;
           opacity: 0 !important;
         }
-      }</style>
+      `}</style>
       <div className="min-h-screen text-white">
         <div className="mx-auto max-w-6xl px-6 py-12 pb-24">
           <header className="flex flex-col gap-2">
@@ -254,11 +252,17 @@ export default function WatchlistClient({ initialTab }: Props) {
                   key={tab.key}
                   type="button"
                   onClick={() => setActiveTab(tab.key)}
-                  className={lex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 }
+                  className={`flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 ${
+                    isActive
+                      ? "border-indigo-500/80 bg-indigo-600 text-white shadow-sm"
+                      : "border-white/20 bg-white/10 text-white hover:border-indigo-300 hover:text-white"
+                  }`}
                 >
                   <span>{tab.label}</span>
                   <span
-                    className={min-w-[1.75rem] rounded-full px-2 py-0.5 text-xs font-bold }
+                    className={`min-w-[1.75rem] rounded-full px-2 py-0.5 text-xs font-bold ${
+                      isActive ? "bg-white/20 text-white" : "bg-zinc-100 text-zinc-700"
+                    }`}
                   >
                     {counts[tab.key]}
                   </span>

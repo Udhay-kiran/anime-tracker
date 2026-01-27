@@ -2,6 +2,11 @@ import { apiBase } from "./apiBase";
 
 export const TOKEN_KEY = "anilog_token";
 
+export const apiUrl = (path: string) => {
+  const base = apiBase();
+  return `${base}${path.startsWith("/") ? "" : "/"}${path}`;
+};
+
 export function saveToken(token: string | null) {
   if (typeof window === "undefined") return;
   try {

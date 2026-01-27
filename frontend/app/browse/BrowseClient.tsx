@@ -4,8 +4,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import AnimeCard, { AnimeCardAnime } from "@/components/AnimeCard";
-import { apiBase } from "@/lib/apiBase";
-import { apiFetch } from "@/lib/api";
+import { apiFetch, apiUrl } from "@/lib/api";
 import SortDropdown from "@/components/SortDropdown";
 
 type Anime = AnimeCardAnime & {
@@ -31,7 +30,6 @@ type FetchState = "loading" | "error" | "ready";
 export default function BrowseClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const API_BASE = apiBase();
 
   const [anime, setAnime] = useState<Anime[]>([]);
   const [state, setState] = useState<FetchState>("loading");
@@ -60,7 +58,7 @@ export default function BrowseClient() {
         setState("loading");
         setError(null);
 
-        const response = await fetch(`${API_BASE}/api/anime`, {
+        const response = await fetch(apiUrl("/api/anime"), {
           signal: controller.signal,
           cache: "no-store",
         });
@@ -88,7 +86,7 @@ export default function BrowseClient() {
     const controller = new AbortController();
     const loadWatchlist = async () => {
       try {
-        const res = await apiFetch(`${API_BASE}/api/watchlist`, {
+        const res = await apiFetch(apiUrl("/api/watchlist"), {
           cache: "no-store",
           signal: controller.signal,
         });
@@ -267,8 +265,8 @@ export default function BrowseClient() {
       setWatchlistLoading((prev) => ({ ...prev, [animeId]: true }));
       const inList = Boolean(watchlist[animeId]);
       const url = inList
-        ? `${API_BASE}/api/watchlist/${animeId}`
-        : `${API_BASE}/api/watchlist`;
+        ? apiUrl(`/api/watchlist/${animeId}`)
+        : apiUrl("/api/watchlist");
       const options: RequestInit = inList
         ? { method: "DELETE" }
         : {
@@ -312,7 +310,7 @@ export default function BrowseClient() {
         setWatchlistLoading((prev) => ({ ...prev, [animeId]: false }));
       }
     },
-    [API_BASE, isAuthed, router, watchlist]
+    [isAuthed, router, watchlist]
   );
 
   const toggleFavorite = useCallback(
@@ -344,7 +342,7 @@ export default function BrowseClient() {
           [key]: { status: "planned", favorite: nextFavorite },
         }));
         try {
-          const res = await apiFetch(`${API_BASE}/api/watchlist`, {
+          const res = await apiFetch(apiUrl("/api/watchlist"), {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ animeId, favorite: nextFavorite }),
@@ -377,7 +375,7 @@ export default function BrowseClient() {
         [key]: { ...entry, favorite: nextFavorite },
       }));
       try {
-        const res = await apiFetch(`${API_BASE}/api/watchlist/${animeId}/favorite`, {
+        const res = await apiFetch(apiUrl(`/api/watchlist/${animeId}/favorite`), {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ favorite: nextFavorite }),
@@ -403,7 +401,7 @@ export default function BrowseClient() {
         setFavoriteLoading((prev) => ({ ...prev, [key]: false }));
       }
     },
-    [API_BASE, isAuthed, router, watchlist]
+    [isAuthed, router, watchlist]
   );
 
   const handleLoadMore = useCallback(() => {

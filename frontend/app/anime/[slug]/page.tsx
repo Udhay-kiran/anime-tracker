@@ -3,8 +3,7 @@
 import Image from "next/image";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { apiBase } from "@/lib/apiBase";
-import { apiFetch } from "@/lib/api";
+import { apiFetch, apiUrl } from "@/lib/api";
 
 type Anime = {
   _id: string;
@@ -34,8 +33,6 @@ const WATCH_STATUSES = [
   { value: "completed", label: "Completed" },
   { value: "dropped", label: "Dropped" },
 ];
-
-const API_BASE = apiBase();
 
 // Simple fade/slide-in on scroll.
 // Usage: <Reveal><YourBlock/></Reveal>
@@ -136,7 +133,7 @@ export default function AnimePage() {
 
   const loadSession = async () => {
     try {
-      const res = await apiFetch(`${API_BASE}/api/auth/me`, {
+      const res = await apiFetch(apiUrl("/api/auth/me"), {
         cache: "no-store",
       });
       if (!res.ok) {
@@ -154,7 +151,7 @@ export default function AnimePage() {
     setReviewsState("loading");
     setReviewsError(null);
     try {
-      const res = await fetch(`${API_BASE}/api/reviews/anime/${animeId}`, {
+      const res = await fetch(apiUrl(`/api/reviews/anime/${animeId}`), {
         cache: "no-store",
       });
       if (!res.ok) throw new Error(`Status ${res.status}`);
@@ -181,7 +178,7 @@ export default function AnimePage() {
         setStatus("loading");
         setError(null);
 
-        const response = await fetch(`${API_BASE}/api/anime/slug/${slug}`, {
+        const response = await fetch(apiUrl(`/api/anime/slug/${slug}`), {
           cache: "no-store",
           signal: controller.signal,
         });
@@ -221,7 +218,7 @@ export default function AnimePage() {
       try {
         setWatchState("loading");
         setWatchError(null);
-        const res = await apiFetch(`${API_BASE}/api/watchlist`, {
+        const res = await apiFetch(apiUrl("/api/watchlist"), {
           cache: "no-store",
           signal: controller.signal,
         });
@@ -258,8 +255,8 @@ export default function AnimePage() {
     const inWatchlist = Boolean(watchStatus);
     const method = inWatchlist ? "PATCH" : "POST";
     const url = inWatchlist
-      ? `${API_BASE}/api/watchlist/${anime._id}`
-      : `${API_BASE}/api/watchlist`;
+      ? apiUrl(`/api/watchlist/${anime._id}`)
+      : apiUrl("/api/watchlist");
 
     try {
       const res = await apiFetch(url, {
@@ -296,7 +293,7 @@ export default function AnimePage() {
     setWatchState("loading");
     setWatchError(null);
     try {
-      const res = await apiFetch(`${API_BASE}/api/watchlist/${anime._id}`, {
+      const res = await apiFetch(apiUrl(`/api/watchlist/${anime._id}`), {
         method: "DELETE",
       });
       if (res.status === 401) throw new Error("Please log in to manage your list");
@@ -322,8 +319,8 @@ export default function AnimePage() {
     setReviewsError(null);
     try {
       const url = editingReviewId
-        ? `${API_BASE}/api/reviews/${editingReviewId}`
-        : `${API_BASE}/api/reviews/anime/${anime._id}`;
+        ? apiUrl(`/api/reviews/${editingReviewId}`)
+        : apiUrl(`/api/reviews/anime/${anime._id}`);
       const method = editingReviewId ? "PATCH" : "POST";
       const res = await apiFetch(url, {
         method,
@@ -365,7 +362,7 @@ export default function AnimePage() {
     if (!anime?._id) return;
     setReviewsError(null);
     try {
-      const res = await apiFetch(`${API_BASE}/api/reviews/${reviewId}`, {
+      const res = await apiFetch(apiUrl(`/api/reviews/${reviewId}`), {
         method: "DELETE",
       });
       if (res.status === 401) {
