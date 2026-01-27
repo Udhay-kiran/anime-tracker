@@ -10,10 +10,10 @@ const watchlistSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["planned", "watching", "completed"],
-      default: "planned",
-      required: true,
+      enum: ["planned", "watching", "completed", "dropped"],
+      required: false,
     },
+    favorite: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

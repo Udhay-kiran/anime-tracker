@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import AnimeCard, { AnimeCardAnime } from "@/components/AnimeCard";
 import { apiBase } from "@/lib/apiBase";
 import { apiFetch } from "@/lib/api";
@@ -46,13 +47,24 @@ const STATUS_BADGES: Record<string, string> = {
 };
 
 export default function WatchlistPage() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [items, setItems] = useState<WatchlistItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [mutatingId, setMutatingId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<TabKey>("favorites");
   const [visibleCount, setVisibleCount] = useState(CARDS_PER_BATCH);
   const API_BASE = apiBase();
+
+  const tabParam = searchParams?.get("tab");
+  const isValidTab = (value: string | null): value is TabKey =>
+    value === "favorites" ||
+    value === "planned" ||
+    value === "watching" ||
+    value === "completed" ||
+    value === "dropped";
+  const activeTab: TabKey = isValidTab(tabParam) ? tabParam : "favorites";
 
   const fetchWatchlist = async () => {
     try {
@@ -119,6 +131,13 @@ export default function WatchlistPage() {
     return base;
   }, [items]);
 
+  const handleTabClick = (next: TabKey) => {
+    if (next === activeTab) return;
+    const params = new URLSearchParams(searchParams?.toString() ?? "");
+    params.set("tab", next);
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+  };
+
   const updateStatus = async (animeId: string, status: string) => {
     const previousItem = items.find((item) => item.anime._id === animeId);
     setMutatingId(animeId);
@@ -129,7 +148,7 @@ export default function WatchlistPage() {
       )
     );
     try {
-      const res = await apiFetch(`${API_BASE}/api/watchlist/${animeId}`, {
+      const res = await apiFetch(`${API_BASE}/api/watchlist/${animeId}/status`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status }),
@@ -179,6 +198,7 @@ export default function WatchlistPage() {
 
   const toggleFavorite = async (animeId: string, currentFavorite: boolean) => {
     const nextFavorite = !currentFavorite;
+    const prevItems = items;
     setMutatingId(animeId);
     setError(null);
     setItems((prev) =>
@@ -198,17 +218,13 @@ export default function WatchlistPage() {
       setItems((prev) =>
         prev.map((item) =>
           item.anime._id === animeId
-            ? { ...item, favorite: Boolean(data.favorite), status: data.status }
+            ? { ...item, favorite: Boolean(data.favorite) }
             : item
         )
       );
     } catch (err) {
       setError((err as Error).message || "Failed to update favorite");
-      setItems((prev) =>
-        prev.map((item) =>
-          item.anime._id === animeId ? { ...item, favorite: currentFavorite } : item
-        )
-      );
+      setItems(prevItems);
     } finally {
       setMutatingId(null);
     }
@@ -248,7 +264,7 @@ export default function WatchlistPage() {
                 <button
                   key={tab.key}
                   type="button"
-                  onClick={() => setActiveTab(tab.key)}
+                  onClick={() => handleTabClick(tab.key)}
                   className={`flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 ${
                     isActive
                       ? "border-indigo-500/80 bg-indigo-600 text-white shadow-sm"

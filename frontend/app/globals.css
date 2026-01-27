@@ -40,6 +40,72 @@ body::before {
   z-index: -2;
 }
 
+@keyframes marquee-left {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.marquee-animate {
+  animation: marquee-left 32s linear infinite;
+  will-change: transform;
+}
+
+.marquee-paused {
+  animation-play-state: paused;
+}
+
+/* Safari text visibility for glass inputs/selects */
+input,
+select,
+textarea {
+  color: white;
+  -webkit-text-fill-color: white;
+}
+
+input::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+select option {
+  color: #111;
+  background-color: #ffffff;
+}
+
+select:focus,
+input:focus {
+  color: white;
+  -webkit-text-fill-color: white;
+}
+
+/* hide native arrows where supported */
+select::-ms-expand {
+  display: none;
+}
+
+/* scoped select styling for browse */
+.anilog-select {
+  background-color: rgba(0, 0, 0, 0.35);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(8px);
+}
+
+.anilog-select option {
+  background-color: #0b1024;
+  color: #fff;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee-animate {
+    animation: none;
+    transform: translateX(0);
+  }
+}
+
 /* Softer vignette */
 body::after {
   content: "";

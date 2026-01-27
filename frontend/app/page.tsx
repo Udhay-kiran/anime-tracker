@@ -136,9 +136,11 @@ export default function HomePage() {
   };
 
   const aboutParagraphs = [
+    "Studentisches Portfolio-Projekt (Demo) — nicht kommerziell.",
+    "Student portfolio demo — non-commercial.",
     "Anilog is a personal anime tracking platform built for people who truly love watching anime, not just collecting lists.",
     "Track what you're watching, discover what's trending, and keep your watchlist organized without distractions or spoilers.",
-    "This project started as a student-built passion project and is continuously evolving with new features, better recommendations, and a cleaner experience.",
+    "This project is a student-built passion project and is continuously made better with new features, better recommendations, and a cleaner experience.",
     "Have ideas, feedback, or found a bug? I'd love to hear from you.",
   ];
 
@@ -288,6 +290,8 @@ export default function HomePage() {
 
   const [heroShown, setHeroShown] = useState(false);
   const [reduceMotion, setReduceMotion] = useState(false);
+  const [marqueePaused, setMarqueePaused] = useState(false);
+  const marqueeResumeRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (heroInView) setHeroShown(true);
@@ -302,6 +306,14 @@ export default function HomePage() {
     update();
     mq.addEventListener("change", update);
     return () => mq.removeEventListener("change", update);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (marqueeResumeRef.current) {
+        clearTimeout(marqueeResumeRef.current);
+      }
+    };
   }, []);
 
   useEffect(() => {
@@ -480,24 +492,52 @@ export default function HomePage() {
               </div>
 
               {/* Mobile marquee in place of Quick Look */}
-              <div className="mt-5 sm:mt-6 w-full md:hidden">
-                <div className="overflow-x-auto no-scrollbar rounded-lg border border-white/15 bg-white/5 px-4 py-4 shadow-[0_18px_50px_rgba(0,0,0,0.35)] ring-1 ring-indigo-300/10 backdrop-blur-lg touch-pan-x">
+              <div className="mt-3 sm:mt-4 w-full md:hidden">
+                <div className="overflow-hidden rounded-lg border border-white/15 bg-white/5 px-4 pt-3 pb-4 shadow-[0_18px_50px_rgba(0,0,0,0.35)] ring-1 ring-indigo-300/10 backdrop-blur-lg">
                   <div
-                    className="flex w-max items-stretch gap-3 snap-x snap-mandatory"
-                    style={{
-                      maskImage: "linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%)",
-                      WebkitMaskImage: "linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%)",
-                      animation: "none",
+                    className="min-w-full overflow-x-auto overflow-y-hidden touch-pan-x overscroll-x-contain"
+                    onMouseEnter={() => setMarqueePaused(true)}
+                    onMouseLeave={() => setMarqueePaused(false)}
+                    onTouchStart={() => setMarqueePaused(true)}
+                    onTouchEnd={() => setMarqueePaused(false)}
+                    onScroll={() => {
+                      setMarqueePaused(true);
+                      if (marqueeResumeRef.current) clearTimeout(marqueeResumeRef.current);
+                      marqueeResumeRef.current = setTimeout(() => {
+                        setMarqueePaused(false);
+                      }, 900);
                     }}
                   >
-                    {heroPosters.map((poster, idx) => (
+                    <div className="relative min-w-full">
                       <div
-                        key={`${poster.base}-ql-${idx}`}
-                        className="relative h-[150px] w-[110px] shrink-0 snap-start overflow-hidden rounded-2xl border border-white/12 bg-black/30 shadow-[0_18px_50px_rgba(0,0,0,0.4)] ring-1 ring-indigo-300/15"
+                        className={`marquee-animate flex w-max items-stretch gap-4 sm:gap-5 ${marqueePaused || reduceMotion ? "marquee-paused" : ""}`}
+                        style={{
+                          maskImage: "linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%)",
+                          WebkitMaskImage: "linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%)",
+                        }}
                       >
-                        <PosterImage base={poster.base} alt={`${poster.base} poster`} priority={idx === 0} />
+                        <div className="flex w-max items-stretch gap-4 sm:gap-5">
+                          {heroPosters.map((poster, idx) => (
+                            <div
+                              key={`${poster.base}-ql-${idx}`}
+                              className="relative h-[165px] w-[110px] sm:h-[188px] sm:w-[125px] md:h-[210px] md:w-[140px] shrink-0 overflow-hidden rounded-2xl border border-white/12 bg-black/30 shadow-[0_18px_50px_rgba(0,0,0,0.4)] ring-1 ring-indigo-300/15"
+                            >
+                              <PosterImage base={poster.base} alt={`${poster.base} poster`} priority={idx === 0} />
+                            </div>
+                          ))}
+                        </div>
+                        <div className="flex w-max items-stretch gap-4 sm:gap-5" aria-hidden="true">
+                          {heroPosters.map((poster, idx) => (
+                            <div
+                              key={`${poster.base}-ql-dup-${idx}`}
+                              className="relative h-[165px] w-[110px] sm:h-[188px] sm:w-[125px] md:h-[210px] md:w-[140px] shrink-0 overflow-hidden rounded-2xl border border-white/12 bg-black/30 shadow-[0_18px_50px_rgba(0,0,0,0.4)] ring-1 ring-indigo-300/15"
+                            >
+                              <PosterImage base={poster.base} alt={`${poster.base} poster`} priority={idx === 0} />
+                            </div>
+                          ))}
+                        </div>
                       </div>
-                    ))}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1024,7 +1064,7 @@ function PosterImage({ base, alt, priority }: { base: string; alt: string; prior
       alt={alt}
       fill
       sizes="(min-width: 1024px) 220px, (min-width: 768px) 180px, (min-width: 640px) 150px, 120px"
-      className="h-full w-full object-cover"
+      className="object-contain"
       priority={priority}
       onError={handleError}
     />

@@ -31,15 +31,22 @@ export default function RegisterPage() {
         body: JSON.stringify({ username, email, password, dob }),
       });
       if (!res.ok) {
-        const msg =
-          res.status === 409 ? "Email or username already registered" : `Error ${res.status}`;
+        let msg = "Registration failed. Please try again.";
+        try {
+          const data = await res.json();
+          if (data?.message) msg = data.message;
+          else if (Array.isArray(data?.errors) && data.errors[0]?.msg) msg = data.errors[0].msg;
+          else if (res.status === 409) msg = "Email or username already registered";
+        } catch {
+          if (res.status === 409) msg = "Email or username already registered";
+        }
         throw new Error(msg);
       }
       const data = (await res.json().catch(() => null)) as { token?: string } | null;
       if (data?.token) saveToken(data.token);
       router.push("/account");
     } catch (err) {
-      setError((err as Error).message || "Registration failed");
+      setError((err as Error).message || "Registration failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -91,7 +98,11 @@ export default function RegisterPage() {
                 className="mt-1 w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white shadow-sm backdrop-blur focus:border-indigo-400 focus:outline-none"
               />
             </label>
-            {error && <p className="text-sm text-red-300">{error}</p>}
+            {error && (
+              <p className="text-sm text-red-300" role="alert" aria-live="polite">
+                {error}
+              </p>
+            )}
             <button
               type="submit"
               disabled={loading}

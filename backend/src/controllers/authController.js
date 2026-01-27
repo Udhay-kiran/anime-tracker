@@ -1,5 +1,8 @@
 const bcrypt = require("bcryptjs");
 const User = require("../models/User");
+const Watchlist = require("../models/Watchlist");
+const Favorite = require("../models/Favorite");
+const Review = require("../models/Review");
 const { issueToken, COOKIE_NAME } = require("../middleware/auth");
 
 const COOKIE_OPTIONS = {
@@ -27,17 +30,15 @@ async function register(req, res) {
   if (!email || !password || !username || !dob) {
     return res
       .status(400)
-      .json({
-        message: "Username, email, password, and date of birth are required",
-      });
+      .json({ message: "Username, email, password, and date of birth are required" });
   }
 
   if (!isValidEmail(email)) {
-    return res.status(400).json({ message: "Invalid email address" });
+    return res.status(400).json({ message: "Please enter a valid email address." });
   }
 
   if (password.length < 6) {
-    return res.status(400).json({ message: "Password must be at least 6 characters" });
+    return res.status(400).json({ message: "Password must be at least 6 characters." });
   }
 
   const normalizedEmail = normalizeEmail(email);
@@ -56,8 +57,8 @@ async function register(req, res) {
     if (existing) {
       const reason =
         existing.email === normalizedEmail
-          ? "Email already registered"
-          : "Username already taken";
+          ? "Email already in use."
+          : "Username already taken.";
       return res.status(409).json({ message: reason });
     }
 
@@ -132,4 +133,31 @@ function logout(req, res) {
   res.status(204).send();
 }
 
-module.exports = { register, login, me, logout };
+async function deleteMe(req, res) {
+  if (!req.user?.id) return res.status(401).json({ message: "Unauthorized" });
+  const { password } = req.body || {};
+  if (!password) return res.status(400).json({ message: "Password is required" });
+
+  try {
+    const user = await User.findById(req.user.id).select("+passwordHash");
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const valid = await bcrypt.compare(password, user.passwordHash);
+    if (!valid) return res.status(401).json({ message: "Invalid password" });
+
+    await Promise.all([
+      Watchlist.deleteMany({ userId: req.user.id }),
+      Favorite.deleteMany({ userId: req.user.id }),
+      Review.deleteMany({ userId: req.user.id }),
+    ]);
+
+    await User.deleteOne({ _id: req.user.id });
+
+    res.clearCookie(COOKIE_NAME, { ...COOKIE_OPTIONS, maxAge: undefined });
+    return res.json({ ok: true });
+  } catch (err) {
+    return res.status(500).json({ message: "Failed to delete account" });
+  }
+}
+
+module.exports = { register, login, me, logout, deleteMe };

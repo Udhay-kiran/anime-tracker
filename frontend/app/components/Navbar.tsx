@@ -5,6 +5,25 @@ import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { apiFetch, saveToken } from "@/lib/api";
 
+function ChevronDown({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M6 9l6 6 6-6" />
+    </svg>
+  );
+}
+
 type SessionUser = {
   username: string;
   email: string;
@@ -160,7 +179,7 @@ export default function Navbar() {
             className="flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-3 py-2 text-sm font-semibold text-white/85 shadow-sm transition hover:border-white/30 hover:text-white hover:drop-shadow-[0_0_10px_rgba(99,102,241,0.35)] md:hidden"
           >
             Menu
-            <span className={`text-xs transition ${openMenu === "menu" ? "rotate-180" : ""}`}>▼</span>
+            <ChevronDown className={`h-4 w-4 transition ${openMenu === "menu" ? "rotate-180" : ""}`} />
           </button>
 
           <div ref={accountRef} className="relative" onPointerDown={(e) => e.stopPropagation()}>
@@ -171,7 +190,7 @@ export default function Navbar() {
               className="flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-semibold text-white/85 shadow-sm transition hover:border-white/30 hover:text-white hover:drop-shadow-[0_0_10px_rgba(99,102,241,0.35)]"
             >
               My Account
-              <span className={`text-xs transition ${openMenu === "account" ? "rotate-180" : ""}`}>v</span>
+              <ChevronDown className={`h-4 w-4 transition ${openMenu === "account" ? "rotate-180" : ""}`} />
             </button>
 
             {openMenu === "account" && (
@@ -264,4 +283,6 @@ function NavLink({ href, label }: { href: string; label: string }) {
     </Link>
   );
 }
+
+
 

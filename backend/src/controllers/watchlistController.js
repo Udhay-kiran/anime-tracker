@@ -7,6 +7,10 @@ function validateStatus(status) {
   return VALID_STATUSES.includes(status);
 }
 
+function validateStatusNullable(status) {
+  return status === undefined || validateStatus(status);
+}
+
 function validateFavorite(value) {
   return typeof value === "boolean";
 }
@@ -47,10 +51,11 @@ async function getWatchlist(req, res) {
 
 // POST /api/watchlist
 async function addWatchlistItem(req, res) {
-  const { animeId, status = "planned", favorite = false } = req.body || {};
+  const { animeId, status, favorite = false } = req.body || {};
 
   if (!animeId) return res.status(400).json({ message: "animeId is required" });
-  if (!validateStatus(status)) return res.status(400).json({ message: "Invalid status value" });
+  if (!validateStatusNullable(status))
+    return res.status(400).json({ message: "Invalid status value" });
   if (!validateFavorite(favorite))
     return res.status(400).json({ message: "favorite must be boolean" });
   try {
@@ -60,7 +65,13 @@ async function addWatchlistItem(req, res) {
     const existing = await Watchlist.findOne({ userId: req.user.id, animeId });
     if (existing) return res.status(409).json({ message: "Anime already in watchlist" });
 
-    const item = await Watchlist.create({ userId: req.user.id, animeId, status, favorite });
+    const effectiveStatus = status !== undefined ? status : favorite ? undefined : "planned";
+    const item = await Watchlist.create({
+      userId: req.user.id,
+      animeId,
+      status: effectiveStatus,
+      favorite,
+    });
     await item.populate(
       "animeId",
       "title slug synopsis releaseYear avgRating status posterUrl localPoster"
@@ -72,29 +83,18 @@ async function addWatchlistItem(req, res) {
   }
 }
 
-// PATCH /api/watchlist/:animeId
-async function updateWatchlistItem(req, res) {
-  const { status, favorite } = req.body || {};
-  if (status !== undefined && !validateStatus(status)) {
+// PATCH /api/watchlist/:animeId/status
+async function updateWatchlistStatus(req, res) {
+  const { status } = req.body || {};
+  if (!validateStatus(status)) {
     return res.status(400).json({ message: "Invalid status value" });
-  }
-  if (favorite !== undefined && !validateFavorite(favorite)) {
-    return res.status(400).json({ message: "favorite must be boolean" });
-  }
-  if (status === undefined && favorite === undefined) {
-    return res.status(400).json({ message: "Provide status or favorite to update" });
   }
 
   try {
     const item = await Watchlist.findOne({ userId: req.user.id, animeId: req.params.animeId });
     if (!item) return res.status(404).json({ message: "Watchlist item not found" });
 
-    if (status !== undefined) {
-      item.status = status;
-    }
-    if (favorite !== undefined) {
-      item.favorite = favorite;
-    }
+    item.status = status;
 
     await item.save();
     await item.populate(
@@ -103,7 +103,7 @@ async function updateWatchlistItem(req, res) {
     );
     return res.json(toPayload(item));
   } catch (err) {
-    return res.status(500).json({ message: "Failed to update watchlist" });
+    return res.status(500).json({ message: "Failed to update watchlist status" });
   }
 }
 
@@ -151,7 +151,7 @@ async function deleteWatchlistItem(req, res) {
 module.exports = {
   getWatchlist,
   addWatchlistItem,
-  updateWatchlistItem,
+  updateWatchlistStatus,
   updateWatchlistFavorite,
   deleteWatchlistItem,
 };

@@ -6,13 +6,14 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import AnimeCard, { AnimeCardAnime } from "@/components/AnimeCard";
 import { apiBase } from "@/lib/apiBase";
 import { apiFetch } from "@/lib/api";
+import SortDropdown from "@/components/SortDropdown";
 
 type Anime = AnimeCardAnime & {
   synopsis: string;
   status: string;
 };
 
-type WatchlistEntry = { status: string; favorite: boolean };
+type WatchlistEntry = { status?: string; favorite: boolean };
 type WatchlistResponseItem = { anime: Anime; status: string; favorite?: boolean };
 
 type FetchState = "loading" | "error" | "ready";
@@ -27,6 +28,7 @@ export default function BrowseClient() {
   const [error, setError] = useState<string | null>(null);
 
   const [query, setQuery] = useState("");
+  const [searchInput, setSearchInput] = useState("");
   const [genre, setGenre] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [year, setYear] = useState<string>("all");
@@ -122,12 +124,20 @@ export default function BrowseClient() {
   }, [anime]);
 
   const optionClass = "bg-[#0f0b24] text-white";
+
+  const defaultSort = "rating_desc";
+  const filtersAppliedCount =
+    (genre !== "all" ? 1 : 0) +
+    (statusFilter !== "all" ? 1 : 0) +
+    (year !== "all" ? 1 : 0);
   const resetFilters = () => {
     setQuery("");
+    setSearchInput("");
     setGenre("all");
     setStatusFilter("all");
     setYear("all");
-    setSort("rating_desc");
+    setSort(defaultSort);
+    setVisibleCount(8);
     if (searchParams?.get("slugs") || searchParams?.get("panel")) {
       router.push("/browse");
     }
@@ -151,6 +161,34 @@ export default function BrowseClient() {
       setYear(yearParam);
     }
   }, [searchParams, sort, statusFilter, year, yearOptions]);
+
+  // Debounce search input for all viewports
+  useEffect(() => {
+    const handle = setTimeout(() => {
+      setQuery(searchInput);
+    }, 300);
+    return () => clearTimeout(handle);
+  }, [searchInput]);
+
+  // Body scroll lock when mobile filters are open
+  useEffect(() => {
+    if (!filtersOpen) return undefined;
+    const original = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = original;
+    };
+  }, [filtersOpen]);
+
+  // Close on Escape
+  useEffect(() => {
+    if (!filtersOpen) return undefined;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setFiltersOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [filtersOpen]);
 
   const handleApplyMobile = () => {
     setFiltersOpen(false);
@@ -289,16 +327,15 @@ export default function BrowseClient() {
         });
 
       if (!entry) {
-        const optimisticStatus = "planned";
         setWatchlist((prev) => ({
           ...prev,
-          [animeId]: { status: optimisticStatus, favorite: nextFavorite },
+          [animeId]: { status: entry?.status, favorite: nextFavorite },
         }));
         try {
           const res = await apiFetch(`${API_BASE}/api/watchlist`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ animeId, status: optimisticStatus, favorite: nextFavorite }),
+            body: JSON.stringify({ animeId, favorite: nextFavorite }),
           });
           if (res.status === 401) {
             setIsAuthed(false);
@@ -310,7 +347,7 @@ export default function BrowseClient() {
           setWatchlist((prev) => ({
             ...prev,
             [animeId]: {
-              status: data.status ?? optimisticStatus,
+              status: data.status,
               favorite: Boolean(data.favorite),
             },
           }));
@@ -458,133 +495,182 @@ export default function BrowseClient() {
 
   const filterControls = (
     <div className="grid gap-3 md:grid-cols-3">
-      <div className="md:col-span-2">
+      <div className="md:col-span-2 hidden md:block">
         <label className="text-xs font-semibold uppercase tracking-[0.2em] text-white/70">
           Search
         </label>
         <input
           type="search"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
           placeholder="Search by title..."
-          className="mt-2 w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white shadow-sm backdrop-blur focus:border-indigo-400 focus:outline-none"
+          className="mt-2 w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white placeholder-white/60 shadow-sm backdrop-blur-md appearance-none [-webkit-appearance:none] [-moz-appearance:none] focus:border-indigo-400 focus:outline-none"
         />
       </div>
-      <div>
+      <div className="hidden md:block">
         <label className="text-xs font-semibold uppercase tracking-[0.2em] text-white/70">
           Sort by
         </label>
-        <select
-          value={sort}
-          onChange={(e) => setSort(e.target.value)}
-          className="mt-2 w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white shadow-sm backdrop-blur focus:border-indigo-400 focus:outline-none"
-        >
-          <option className={optionClass} value="rating_desc">
-            Rating (high to low)
-          </option>
-          <option className={optionClass} value="year_desc">
-            Year (newest first)
-          </option>
-          <option className={optionClass} value="title_asc">
-            Title (A-Z)
-          </option>
-        </select>
+        <div className="relative mt-2">
+          <SortDropdown value={sort} onChange={setSort} />
+        </div>
       </div>
 
       <div>
         <label className="text-xs font-semibold uppercase tracking-[0.2em] text-white/70">
           Genre
         </label>
-        <select
-          value={genre}
-          onChange={(e) => setGenre(e.target.value)}
-          className="mt-2 w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white shadow-sm backdrop-blur focus:border-indigo-400 focus:outline-none"
-        >
-          <option className={optionClass} value="all">
-            All
-          </option>
-          {genreOptions.map((g) => (
-            <option className={optionClass} key={g} value={g}>
-              {g}
+        <div className="relative mt-2">
+          <select
+            value={genre}
+            onChange={(e) => setGenre(e.target.value)}
+            className="anilog-select w-full rounded-xl border border-white/10 bg-[rgba(10,12,24,0.55)] px-3 py-2 pr-10 text-sm text-white shadow-sm backdrop-blur-md appearance-none focus:outline-none focus:ring-2 focus:ring-indigo-300/30 focus:border-indigo-300/30"
+          >
+            <option className={optionClass} value="all">
+              All
             </option>
-          ))}
-        </select>
+            {genreOptions.map((g) => (
+              <option className={optionClass} key={g} value={g}>
+                {g}
+              </option>
+            ))}
+          </select>
+          <svg
+            className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/70"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M6 9l6 6 6-6" />
+          </svg>
+        </div>
       </div>
       <div>
         <label className="text-xs font-semibold uppercase tracking-[0.2em] text-white/70">
           Status
         </label>
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="mt-2 w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white shadow-sm backdrop-blur focus:border-indigo-400 focus:outline-none"
-        >
-          <option className={optionClass} value="all">
-            All
-          </option>
-          <option className={optionClass} value="airing">
-            Airing
-          </option>
-          <option className={optionClass} value="finished">
-            Finished
-          </option>
-          <option className={optionClass} value="coming_soon">
-            Coming soon
-          </option>
-          <option className={optionClass} value="hiatus">
-            Hiatus
-          </option>
-        </select>
+        <div className="relative mt-2">
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="anilog-select w-full rounded-xl border border-white/10 bg-[rgba(10,12,24,0.55)] px-3 py-2 pr-10 text-sm text-white shadow-sm backdrop-blur-md appearance-none focus:outline-none focus:ring-2 focus:ring-indigo-300/30 focus:border-indigo-300/30"
+          >
+            <option className={optionClass} value="all">
+              All
+            </option>
+            <option className={optionClass} value="airing">
+              Airing
+            </option>
+            <option className={optionClass} value="finished">
+              Finished
+            </option>
+            <option className={optionClass} value="coming_soon">
+              Coming soon
+            </option>
+            <option className={optionClass} value="hiatus">
+              Hiatus
+            </option>
+          </select>
+          <svg
+            className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/70"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M6 9l6 6 6-6" />
+          </svg>
+        </div>
       </div>
       <div>
         <label className="text-xs font-semibold uppercase tracking-[0.2em] text-white/70">
           Year
         </label>
-        <select
-          value={year}
-          onChange={(e) => setYear(e.target.value)}
-          className="mt-2 w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white shadow-sm backdrop-blur focus:border-indigo-400 focus:outline-none"
-        >
-          <option className={optionClass} value="all">
-            All
-          </option>
-          {yearOptions.map((y) => (
-            <option className={optionClass} key={y} value={y}>
-              {y}
+        <div className="relative mt-2">
+          <select
+            value={year}
+            onChange={(e) => setYear(e.target.value)}
+            className="anilog-select w-full rounded-xl border border-white/10 bg-[rgba(10,12,24,0.55)] px-3 py-2 pr-10 text-sm text-white shadow-sm backdrop-blur-md appearance-none focus:outline-none focus:ring-2 focus:ring-indigo-300/30 focus:border-indigo-300/30"
+          >
+            <option className={optionClass} value="all">
+              All
             </option>
-          ))}
-        </select>
+            {yearOptions.map((y) => (
+              <option className={optionClass} key={y} value={y}>
+                {y}
+              </option>
+            ))}
+          </select>
+          <svg
+            className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/70"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M6 9l6 6 6-6" />
+          </svg>
+        </div>
       </div>
-      <div>
+      <div className="hidden md:block">
         <label className="text-xs font-semibold uppercase tracking-[0.2em] text-white/70">
           Quick actions
         </label>
-        <div className="mt-2 flex flex-col gap-2 md:hidden">
-          <button
-            type="button"
-            aria-label="Apply filters"
-            onClick={handleApplyMobile}
-            className="w-full rounded-xl border border-white/15 bg-white/12 px-3 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:border-indigo-300 hover:text-white"
-          >
-            Apply filters
-          </button>
-          <button
-            type="button"
-            onClick={resetFilters}
-            className="w-full rounded-xl border border-white/15 bg-transparent px-3 py-2.5 text-sm font-semibold text-white/80 transition hover:border-indigo-300 hover:text-white"
-          >
-            Reset filters
-          </button>
+        {filtersAppliedCount > 0 ? (
+          <div className="mt-2 hidden items-center gap-3 md:flex">
+            <span className="rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-white/80 shadow-sm">
+              {filtersAppliedCount} {filtersAppliedCount === 1 ? "filter" : "filters"} applied
+            </span>
+            <button
+              type="button"
+              onClick={resetFilters}
+              className="rounded-lg border border-white/20 px-3 py-2 text-sm font-semibold text-white transition hover:border-indigo-300 hover:text-white"
+            >
+              Reset filters
+            </button>
+          </div>
+        ) : (
+          <div className="mt-2 hidden md:flex text-xs text-white/50">No filters applied</div>
+        )}
+      </div>
+    </div>
+  );
+
+  const mobileControls = (
+    <div className="md:hidden sticky top-0 z-40 -mx-6 px-6 pt-3 pb-3 space-y-3 border-b border-white/10 bg-black/60 backdrop-blur-md">
+      <div>
+        <input
+          type="search"
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
+          placeholder="Search by title..."
+          className="w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white placeholder-white/60 shadow-sm backdrop-blur-md appearance-none [-webkit-appearance:none] [-moz-appearance:none] focus:border-indigo-300 focus:outline-none"
+        />
+      </div>
+      <div className="flex items-center gap-2">
+        <div className="flex-1 min-w-0">
+          <SortDropdown value={sort} onChange={setSort} />
         </div>
-        <div className="mt-2 hidden gap-2 md:flex">
-          <button
-            type="button"
-            onClick={resetFilters}
-            className="w-full rounded-lg border border-white/20 px-3 py-2 text-sm font-semibold text-white transition hover:border-indigo-300 hover:text-white"
-          >
-            Reset filters
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={() => setFiltersOpen(true)}
+          className="shrink-0 rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm font-semibold text-white shadow-sm backdrop-blur-md transition hover:border-indigo-300 hover:text-white"
+        >
+          Filters
+        </button>
+        <span className="shrink-0 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-white/80 shadow-sm">
+          {filtered.length} results
+        </span>
       </div>
     </div>
   );
@@ -601,8 +687,8 @@ export default function BrowseClient() {
         backgroundAttachment: "fixed",
       }}
     >
-      <div className="mx-auto max-w-6xl px-6 py-12">
-        <header className="mb-8 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+      <div className="mx-auto max-w-6xl px-6 pt-8 pb-12 md:py-12">
+        <header className="mb-4 flex flex-col gap-3 md:mb-6 md:flex-row md:items-center md:justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-indigo-300">
               Discover
@@ -625,39 +711,65 @@ export default function BrowseClient() {
               </div>
             )}
           </div>
-          <div className="flex flex-col items-start gap-3 text-sm font-semibold text-white/85 md:items-end">
-            <div className="rounded-full border border-white/15 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white/80 shadow-sm backdrop-blur">
-              {filtered.length} results
-            </div>
+        </header>
+
+        {mobileControls}
+        {filtersAppliedCount > 0 && (
+          <div className="-mx-6 px-6 mt-2 mb-4 md:hidden flex items-center justify-between text-xs font-semibold text-white/80">
+            <span className="rounded-full border border-white/20 bg-white/10 px-3 py-1 shadow-sm">
+              {filtersAppliedCount} {filtersAppliedCount === 1 ? "filter" : "filters"} applied
+            </span>
             <button
               type="button"
-              onClick={() => setFiltersOpen(true)}
-              className="flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-white/85 shadow-sm backdrop-blur transition hover:border-indigo-300 hover:text-white md:hidden"
+              onClick={resetFilters}
+              className="rounded-lg border border-white/20 bg-white/5 px-3 py-1.5 text-[11px] font-semibold text-white transition hover:border-indigo-300 hover:text-white"
             >
-              Filters
+              Reset
             </button>
           </div>
-        </header>
+        )}
 
         <div className="hidden rounded-2xl border border-white/10 bg-white/10 p-5 shadow-lg backdrop-blur lg:block">
           {filterControls}
         </div>
 
         {filtersOpen && (
-          <div className="fixed inset-0 z-60 bg-black/60 backdrop-blur-sm lg:hidden">
-            <div className="absolute inset-4 rounded-3xl border border-white/15 bg-[#0d0a1f]/95 p-5 shadow-[0_20px_60px_rgba(0,0,0,0.6)]">
-              <div className="mb-4 flex items-center justify-between">
+          <div
+            className="fixed inset-0 z-60 flex items-end bg-black/60 backdrop-blur-sm lg:hidden"
+            onClick={() => setFiltersOpen(false)}
+          >
+            <div
+              className="w-full max-h-[80vh] rounded-t-3xl border border-white/15 bg-[#0d0a1f]/95 p-5 shadow-[0_20px_60px_rgba(0,0,0,0.6)] transition-transform duration-200"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="mb-3 flex items-center justify-between">
                 <div className="text-sm font-semibold uppercase tracking-[0.18em] text-white/80">Filters</div>
                 <button
                   type="button"
                   aria-label="Close filters"
                   onClick={() => setFiltersOpen(false)}
-                  className="md:hidden rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-semibold text-white/80 hover:border-indigo-300 hover:text-white"
+                  className="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-semibold text-white/80 transition hover:border-indigo-300 hover:text-white"
                 >
-                  ×
+                  x
                 </button>
               </div>
-              <div className="max-h-[70vh] overflow-y-auto pr-1">{filterControls}</div>
+              <div className="max-h-[60vh] overflow-y-auto pr-1">{filterControls}</div>
+              <div className="mt-4 flex items-center justify-end gap-3 border-t border-white/10 pt-4">
+                <button
+                  type="button"
+                  onClick={resetFilters}
+                  className="rounded-lg border border-white/20 px-4 py-2 text-sm font-semibold text-white transition hover:border-indigo-300 hover:text-white"
+                >
+                  Reset
+                </button>
+                <button
+                  type="button"
+                  onClick={handleApplyMobile}
+                  className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700"
+                >
+                  Apply
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -667,6 +779,7 @@ export default function BrowseClient() {
     </main>
   );
 }
+
 
 
 
