@@ -29,6 +29,9 @@ Deployment:
 ## Architecture
 The application uses a REST-based backend connected to MongoDB for structured content storage. The frontend is built with reusable React components and focuses on responsive layout and usability.
 
+## Planning & Design
+[View Planning & Prototype Document (PDF)](./docs/anilog-planning.pdf)
+
 
 ## Why I built this
 This project was created to deepen my understanding of full-stack development, including authentication, API design, and deployment. It also helped me practice building structured content systems and scalable UI components.
