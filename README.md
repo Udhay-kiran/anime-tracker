@@ -26,8 +26,11 @@ Deployment:
 - Responsive UI
 - Persistent session handling
 
-## Architecture
+## Architecture and Planning
 The application uses a REST-based backend connected to MongoDB for structured content storage. The frontend is built with reusable React components and focuses on responsive layout and usability.
+![Anilog Planning](https://github.com/user-attachments/assets/b0479428-6cb9-43ba-b781-7bf550629e94)
+
+
 
 ## Why I built this
 This project was created to deepen my understanding of full-stack development, including authentication, API design, and deployment. It also helped me practice building structured content systems and scalable UI components.
