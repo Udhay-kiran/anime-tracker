@@ -1,20 +1,36 @@
-# Anime Tracker
+# Anilog – Full Stack Anime Tracker
 
-Full-stack anime tracking app.
+Anilog is a full-stack web application for tracking and organizing anime titles. Users can create accounts, manage watchlists, and filter content dynamically.
 
-## Apps
+## Live Demo
+https://anilog-tracker.vercel.app/
 
-- `backend/` Express + MongoDB API
-- `frontend/` Next.js UI
+## Tech Stack
+Frontend:
+- React
+- Next.js
+- TypeScript
 
-## Local development
+Backend:
+- Node.js
+- REST APIs
+- MongoDB
 
-### Backend
+Deployment:
+- Vercel / Render
 
-cd backend
-npm run dev
+## Features
+- User authentication
+- Personalized lists
+- Dynamic filtering and sorting
+- Responsive UI
+- Persistent session handling
 
-### Frontend
+## Architecture and Planning
+The application uses a REST-based backend connected to MongoDB for structured content storage. The frontend is built with reusable React components and focuses on responsive layout and usability.
+![Anilog Planning](https://github.com/user-attachments/assets/b0479428-6cb9-43ba-b781-7bf550629e94)
 
-cd frontend
-npm run dev
+
+
+## Why I built this
+This project was created to deepen my understanding of full-stack development, including authentication, API design, and deployment. It also helped me practice building structured content systems and scalable UI components.
