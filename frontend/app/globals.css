@@ -1,8 +1,6 @@
 @import "tailwindcss";
 
-/* globals.css */
-
-/* Background tokens */
+/* Shared background color tokens. */
 :root {
   --bg-0: #060812;
   --bg-1: #090b16;
@@ -25,7 +23,7 @@ body {
   overflow-x: hidden;
 }
 
-/* Collage layer (NO BLUR — keep it crisp so glass doesn't become fog) */
+/* Fixed collage backdrop behind page content. */
 body::before {
   content: "";
   position: fixed;
@@ -33,7 +31,7 @@ body::before {
   background-image: url("/bg/anilog-collage.webp");
   background-size: cover;
   background-position: center;
-  opacity: 0.10; /* tweak 0.08–0.14 */
+  opacity: 0.10;
   filter: none;
   transform: scale(1.02);
   pointer-events: none;
@@ -58,7 +56,7 @@ body::before {
   animation-play-state: paused;
 }
 
-/* Safari text visibility for glass inputs/selects */
+/* Keep form text legible on Safari with translucent controls. */
 input,
 select,
 textarea {
@@ -81,12 +79,12 @@ input:focus {
   -webkit-text-fill-color: white;
 }
 
-/* hide native arrows where supported */
+/* Hide legacy select arrows where supported. */
 select::-ms-expand {
   display: none;
 }
 
-/* scoped select styling for browse */
+/* Shared select styling used on browse filters. */
 .anilog-select {
   background-color: rgba(0, 0, 0, 0.35);
   color: #fff;
@@ -106,7 +104,7 @@ select::-ms-expand {
   }
 }
 
-/* Softer vignette */
+/* Global vignette overlay. */
 body::after {
   content: "";
   position: fixed;
@@ -116,7 +114,7 @@ body::after {
   z-index: -1;
 }
 
-/* === Glass helpers === */
+/* Reusable glass utility classes. */
 @layer components {
   .glass {
     @apply bg-white/[0.02] border border-white/15 shadow-[0_30px_80px_rgba(0,0,0,0.30)];
@@ -181,7 +179,7 @@ body::after {
   animation: fadeInUp 0.5s ease-out both;
 }
 
-/* Hide scrollbars helper */
+/* Utility to hide scrollbars while keeping scroll behavior. */
 .no-scrollbar {
   scrollbar-width: none;
 }
@@ -189,7 +187,7 @@ body::after {
   display: none;
 }
 
-/* Allow per-page suppression of the base dark overlay */
+/* Lets specific pages disable the global overlay. */
 body.no-watchlist-overlay .page-overlay {
   opacity: 0 !important;
   display: none !important;

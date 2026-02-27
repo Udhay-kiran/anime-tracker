@@ -50,6 +50,7 @@ export default function BrowseClient() {
   const [favoriteLoading, setFavoriteLoading] = useState<Record<string, boolean>>({});
   const [isAuthed, setIsAuthed] = useState<boolean | null>(null);
 
+  // Load the browse catalog once when the page mounts.
   useEffect(() => {
     const controller = new AbortController();
 
@@ -84,6 +85,7 @@ export default function BrowseClient() {
 
   useEffect(() => {
     const controller = new AbortController();
+    // Load watchlist state so cards can render "in list" and favorite status immediately.
     const loadWatchlist = async () => {
       try {
         const res = await apiFetch(apiUrl("/api/watchlist"), {
@@ -171,7 +173,7 @@ export default function BrowseClient() {
     }
   }, [searchParams, sort, statusFilter, year, yearOptions]);
 
-  // Debounce search input for all viewports
+  // Delay filtering until the user pauses typing.
   useEffect(() => {
     const handle = setTimeout(() => {
       setQuery(searchInput);
@@ -179,7 +181,7 @@ export default function BrowseClient() {
     return () => clearTimeout(handle);
   }, [searchInput]);
 
-  // Body scroll lock when mobile filters are open
+  // Prevent background page scroll when the mobile filter sheet is open.
   useEffect(() => {
     if (!filtersOpen) return undefined;
     const original = document.body.style.overflow;
@@ -189,7 +191,7 @@ export default function BrowseClient() {
     };
   }, [filtersOpen]);
 
-  // Close on Escape
+  // Support keyboard dismissal for the mobile filter sheet.
   useEffect(() => {
     if (!filtersOpen) return undefined;
     const onKey = (e: KeyboardEvent) => {
@@ -210,6 +212,7 @@ export default function BrowseClient() {
   );
 
   const filtered = useMemo(() => {
+    // Start with either the full list or the preselected panel subset from URL params.
     const base = panelSlugs ? anime.filter((item) => panelSlugs.includes(item.slug)) : [...anime];
     let list = [...base];
 

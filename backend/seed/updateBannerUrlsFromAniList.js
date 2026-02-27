@@ -7,7 +7,7 @@ const Anime = require("../src/models/Anime");
 
 const ANILIST_API = "https://graphql.anilist.co";
 
-// Small delay so you don't spam AniList
+// Small delay between requests to avoid hammering AniList.
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 async function connectDB() {
@@ -29,7 +29,7 @@ async function connectDB() {
 }
 
 async function fetchAniListMediaByTitle(title) {
-  // GraphQL query: search best match by title
+  // Search AniList by title and return banner metadata.
   const query = `
     query ($search: String) {
       Media(search: $search, type: ANIME) {
@@ -69,7 +69,7 @@ async function fetchAniListMediaByTitle(title) {
 }
 
 function pickBannerUrl(media) {
-  // Prefer bannerImage. If missing, you can fall back to coverImage.extraLarge
+  // Keep only bannerImage for this field.
   if (!media) return null;
   return media.bannerImage || null;
 }
@@ -77,7 +77,7 @@ function pickBannerUrl(media) {
 async function run() {
   await connectDB();
 
-  // Only update animes that have missing/empty bannerUrl
+  // Update only entries missing a banner URL.
   const animes = await Anime.find({
     $or: [{ bannerUrl: { $exists: false } }, { bannerUrl: "" }],
   });
@@ -105,7 +105,7 @@ async function run() {
         console.log(`🖼️  Updated banner: ${title}`);
       }
 
-      // polite rate limit
+      // Rate limit between successful calls.
       await sleep(450);
     } catch (err) {
       failed++;

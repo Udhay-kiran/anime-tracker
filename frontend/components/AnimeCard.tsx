@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ChangeEvent, MouseEvent } from "react";
+import { ChangeEvent, MouseEvent as ReactMouseEvent } from "react";
 
 function ChevronDown({ className }: { className?: string }) {
   return (
@@ -101,18 +101,18 @@ export default function AnimeCard({
   const primaryLabel = primaryActionLabel ?? (isWatchlisted ? "In Watchlist" : "Add to Watchlist");
   const controlCols = showStatusDropdown && showRemoveButton ? "grid-cols-2" : "grid-cols-1";
 
-  const handleWatchlist = (e: MouseEvent) => {
+  const handleWatchlist = (e: ReactMouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     if (!animeId) return;
     onToggleWatchlist(animeId);
   };
 
-  const handleFavorite = (e: MouseEvent) => {
+  const handleFavorite = (e: ReactMouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    // @ts-ignore
-    e.nativeEvent?.stopImmediatePropagation?.();
+    (e.nativeEvent as Event & { stopImmediatePropagation?: () => void })
+      .stopImmediatePropagation?.();
     if (!animeId) return;
     onToggleFavorite(animeId);
   };
@@ -123,12 +123,13 @@ export default function AnimeCard({
     onStatusChange(e.target.value);
   };
 
-  const handleRemove = (e: MouseEvent) => {
+  const handleRemove = (e: ReactMouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     onRemove?.();
   };
 
+  // Shared floating favorite button used by both layouts.
   const heartButton = showFavorite ? (
     <button
       type="button"
@@ -192,6 +193,7 @@ export default function AnimeCard({
     </>
   );
 
+  // Compact mobile card layout.
   const mobileCard = isMyList ? (
     <div className="group relative flex h-[250px] w-full flex-col rounded-2xl border border-white/12 bg-black/25 p-2 backdrop-blur-md shadow-sm transition md:hidden">
       {heartButton}
@@ -271,6 +273,7 @@ export default function AnimeCard({
     </div>
   );
 
+  // Expanded desktop card layout.
   const desktopCard = isMyList ? (
     <div
       className={`group relative hidden h-full ${GLASS_CARD} p-5 pb-16 transition duration-200 ease-out hover:-translate-y-1.5 hover:scale-[1.02] hover:shadow-2xl hover:ring-1 hover:ring-indigo-400/25 md:block`}

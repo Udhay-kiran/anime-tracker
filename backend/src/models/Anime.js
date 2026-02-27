@@ -2,17 +2,17 @@ const mongoose = require("mongoose");
 
 const AnimeSchema = new mongoose.Schema(
   {
-    // Core identity
+    // Identity fields used for lookups and routing.
     title: { type: String, required: true, trim: true, index: true },
     slug: { type: String, required: true, unique: true, lowercase: true, index: true },
 
-    // Display info
+    // Content shown in cards and detail pages.
     synopsis: { type: String, default: "" },
     description: { type: String, default: "" },
     posterUrl: { type: String, required: true, default: "" },
     bannerUrl: { type: String, default: "" },
 
-    // Meta
+    // Release metadata used for filtering.
     releaseYear: { type: Number, min: 1900, max: 3000 },
     status: {
       type: String,
@@ -21,15 +21,15 @@ const AnimeSchema = new mongoose.Schema(
       index: true,
     },
 
-    // Tags / filters
-    genres: { type: [String], default: [], index: true }, // e.g. ["Action", "Shounen"]
+    // Tag-like fields used in browse filters.
+    genres: { type: [String], default: [], index: true },
     studio: { type: String, default: "" },
 
-    // Stats (can grow later)
+    // Aggregated stats.
     avgRating: { type: Number, default: 0, min: 0, max: 10 },
     ratingsCount: { type: Number, default: 0, min: 0 },
 
-    // Optional structure for your detail page
+    // Optional detail metadata.
     seasonsCount: { type: Number, default: 1, min: 1 },
     episodesCount: { type: Number, default: 0, min: 0 },
   },

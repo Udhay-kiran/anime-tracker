@@ -40,11 +40,11 @@ type LoadState = "loading" | "error" | "ready";
 
 type HeroPoster = {
   base: string;
-  x: number;      // 0..100 (percentage inside the screen)
-  y: number;      // 0..100
-  r: number;      // rotation in degrees
-  s: number;      // scale (1 = normal)
-  z: number;      // z-index
+  x: number; // 0..100 (horizontal position inside the layout)
+  y: number; // 0..100 (vertical position inside the layout)
+  r: number; // rotation in degrees
+  s: number; // scale factor
+  z: number; // stacking order
 };
 
 type QuickLookItem = {
@@ -53,7 +53,7 @@ type QuickLookItem = {
   icon: "pin" | "bolt" | "heart";
 };
 
-const NAV_OFFSET_PX = 65; // you used 65 already â€“ keep consistent
+const NAV_OFFSET_PX = 65; // Matches the fixed navbar height.
 
 
 const heroPosters: HeroPoster[] = [
@@ -368,16 +368,15 @@ export default function HomePage() {
           100% { transform: translateX(-50%); }
         }
       `}</style>
-      {/* (These were doing nothing, keeping but harmless) */}
       <div className="pointer-events-none absolute inset-0 opacity-0" />
       <div className="pointer-events-none absolute inset-0 opacity-0" />
 
-      {/* HERO */}
+      {/* Hero section */}
       <section
   ref={heroRef}
-  className="relative z-10 mx-auto w-full max-w-screen-2xl px-4 pt-5 sm:px-6 sm:pt-6 lg:px-8"
+  className="relative z-10 mx-auto w-full max-w-screen-2xl px-4 pt-5 sm:px-6 sm:pt-6 lg:px-8 2xl:max-w-7xl"
 >
-        {/* HERO CARD â€” single layer, fully transparent fill */}
+        {/* Main hero shell */}
         <div
           className="
             relative mx-auto w-full
@@ -392,7 +391,7 @@ export default function HomePage() {
   maxHeight: 600,
 }}
         >
-          {/* Grid container */}
+          {/* Two-column hero layout on desktop */}
           <div
             className="
               grid gap-8 px-4 py-4 sm:px-6 md:px-5 md:py-5
@@ -401,7 +400,7 @@ export default function HomePage() {
               lg:grid-cols-[minmax(0,560px)_1fr]
             "
           >
-            {/* LEFT */}
+            {/* Left column: messaging and quick actions */}
             <div
               className={cx(
                 "relative flex h-full min-w-0 flex-col justify-between pb-6 transition-all duration-700 md:pb-0",
@@ -468,18 +467,16 @@ export default function HomePage() {
                 </div>
               </div>
 
-              {/* QUICK LOOK ??" remove extra boxes/lines, keep clean */}
-              <div className="mt-1 sm:mt-2.5 hidden w-full max-w-[560px] mr-auto rounded-lg border border-white/15 bg-transparent px-6 py-3 md:block">
+              {/* Desktop quick-look summary */}
+              <div className="mt-1 sm:mt-2.5 hidden w-full max-w-[560px] mr-auto rounded-lg border border-white/20 bg-black/35 px-6 py-3 shadow-[0_12px_30px_rgba(0,0,0,0.28)] backdrop-blur-md md:block">
                 <div className="flex items-center justify-between text-[11px] font-semibold tracking-[0.22em] text-white/80">
                   <span>QUICK LOOK</span>
                 </div>
 
-                {/* Remove divider lines and mini ??ocard??? visuals */}
                 <div className="mt-3 grid gap-3 sm:grid-cols-3">
                   {quickLookItems.map((item) => (
                     <div key={item.title} className="min-w-0">
                       <div className="flex items-center gap-2">
-                        {/* no icon box */}
                         <span className="text-white/85">
                           <QuickLookIcon type={item.icon} />
                         </span>
@@ -491,7 +488,7 @@ export default function HomePage() {
                 </div>
               </div>
 
-              {/* Mobile marquee in place of Quick Look */}
+              {/* Mobile quick-look carousel */}
               <div className="mt-3 sm:mt-4 w-full md:hidden">
                 <div className="overflow-hidden rounded-lg border border-white/15 bg-white/5 px-4 pt-3 pb-4 shadow-[0_18px_50px_rgba(0,0,0,0.35)] ring-1 ring-indigo-300/10 backdrop-blur-lg">
                   <div
@@ -542,10 +539,9 @@ export default function HomePage() {
                 </div>
               </div>
 
-              {/* close LEFT col */}
             </div>
 
-            {/* RIGHT */}
+            {/* Right column: rotating hero poster */}
             <div className="hidden md:block">
               <div
                 className={cx(
@@ -563,7 +559,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* FEATURES */}
+      {/* Features section */}
       <section id="features" ref={featuresRef} className="mx-auto w-full max-w-7xl px-6 lg:px-8 pt-5 sm:pt-6 md:pt-14">
         <div className="flex items-end justify-between gap-4 md:gap-6">
           <div>
@@ -651,7 +647,7 @@ export default function HomePage() {
         )}
       </section>
 
-      {/* HIGHLIGHTS */}
+      {/* Highlights section */}
       <section ref={highlightsRef} className="mx-auto w-full max-w-7xl px-6 lg:px-8 pb-14 pt-10 sm:pb-16 sm:pt-12 md:pb-20 md:pt-14">
         <div className="flex items-end justify-between gap-6">
           <div>
@@ -673,7 +669,7 @@ export default function HomePage() {
 
           {state === "ready" && (
             <div className="space-y-6">
-              {/* Mobile/compact: tabs */}
+              {/* Mobile tabbed highlights */}
               <div className="space-y-4 md:hidden">
                 <div className="flex items-center gap-2 overflow-x-auto pb-1">
                   {highlightCategories.map((cat) => (
@@ -744,7 +740,7 @@ export default function HomePage() {
                   ))}
               </div>
 
-              {/* Desktop/tablet */}
+              {/* Desktop and tablet highlights */}
               <div className="hidden md:block">
                 <div className="space-y-6 lg:hidden">
                   {highlightCategories.map((cat, idx) => (
@@ -893,7 +889,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* CONTACT */}
+      {/* Contact section */}
       <section id="contact" ref={contactRef} className="mx-auto w-full max-w-7xl px-6 lg:px-8 pb-14 pt-8 scroll-mt-24 sm:pb-16 md:pb-20 md:pt-10">
         {mounted ? (
           <div className="rounded-2xl border border-white/10 bg-black/20 p-6 shadow-[0_18px_55px_rgba(0,0,0,0.35)] backdrop-blur-xl md:p-8">
@@ -977,7 +973,7 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Mobile About toggle */}
+            {/* Mobile "About" accordion */}
             <div className="md:hidden mt-4">
               <button
                 type="button"
@@ -1082,11 +1078,11 @@ function HeroPosterCollage({ show }: { show: boolean }) {
     { src: "/posters/poster-7.png", alt: "Poster 7" },
   ];
 
-  // current poster index
+  // Active slide index.
   const [i, setI] = useState(0);
-  // previous poster index (used for crossfade)
+  // Previous slide index to crossfade from.
   const [prevI, setPrevI] = useState<number | null>(null);
-  // whether weâ€™re in the middle of a fade transition
+  // Tracks whether fade animation is currently running.
   const [fading, setFading] = useState(false);
   const [paused, setPaused] = useState(false);
 
@@ -1099,7 +1095,7 @@ function HeroPosterCollage({ show }: { show: boolean }) {
       setI(next);
       setFading(true);
 
-      // fade duration (match the CSS transition duration below)
+      // Keep state timing aligned with the transition duration.
       const t = setTimeout(() => setFading(false), 550);
       return () => clearTimeout(t);
     }, 6500);
@@ -1124,7 +1120,7 @@ function HeroPosterCollage({ show }: { show: boolean }) {
       <div className="absolute inset-0 rounded-[24px] shadow-[0_30px_80px_rgba(0,0,0,0.4)]" />
 
       <div className="absolute inset-[12px] overflow-hidden rounded-[20px] bg-black/30">
-        {/* PREVIOUS slide (fades OUT) */}
+        {/* Previous slide fades out */}
         {previous && (
           <div
             className={cx(
@@ -1136,7 +1132,7 @@ function HeroPosterCollage({ show }: { show: boolean }) {
           </div>
         )}
 
-        {/* CURRENT slide (fades IN) */}
+        {/* Current slide fades in */}
         <div
           className={cx(
             "absolute inset-0 transition-opacity duration-[550ms]",
@@ -1151,14 +1147,12 @@ function HeroPosterCollage({ show }: { show: boolean }) {
 }
 
 /**
- * Netflix-style slide:
- * - background uses SAME image, softly blurred + dark overlay (fills wide rectangle)
- * - foreground shows the portrait poster sharp and centered
+ * Hero slide with a blurred background layer and a sharp centered poster.
  */
 function HeroNetflixSlide({ src, alt, shade }: { src: string; alt: string; shade: number }) {
   return (
     <div className="relative h-full w-full">
-      {/* Background fill (blurred version of SAME poster) */}
+      {/* Blurred background version of the same image */}
       <div className="absolute inset-0">
         <Image
           src={src}
@@ -1168,13 +1162,13 @@ function HeroNetflixSlide({ src, alt, shade }: { src: string; alt: string; shade
           className="object-cover scale-[1.02] blur-[12px] opacity-60"
           priority
         />
-        {/* Darken + vignette so foreground pops */}
+        {/* Overlays add depth and keep text/poster contrast stable */}
         <div className="absolute inset-0" style={{ backgroundColor: `rgba(0,0,0,${shade})` }} />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,rgba(255,255,255,0.06),transparent_55%)]" />
         <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(0,0,0,0.28),transparent_20%,transparent_80%,rgba(0,0,0,0.28))]" />
       </div>
 
-      {/* Foreground poster (sharp, centered, portrait) */}
+      {/* Foreground poster stays sharp and centered */}
       <div className="absolute inset-0 flex items-center justify-center">
         <div className="relative h-[92%] aspect-[2/3] max-w-[360px] sm:max-w-[380px] lg:max-w-[420px] overflow-hidden rounded-[18px] shadow-[0_18px_55px_rgba(0,0,0,0.45)] ring-1 ring-white/10 bg-black/20">
           <Image
@@ -1207,11 +1201,8 @@ function MosaicPoster({
     <div
       className={cx(
         "relative overflow-hidden",
-        // LESS rounding than your current version (closer to target)
         "rounded-xl",
-        // Crisp border like the target
         "border border-white/12",
-        // Dark depth shadow
         "shadow-[0_28px_90px_rgba(0,0,0,0.60)]",
         className
       )}
@@ -1224,9 +1215,7 @@ function MosaicPoster({
         sizes="(min-width: 1024px) 480px, (min-width: 768px) 360px, 280px"
         className="object-cover"
       />
-      {/* A tiny glossy highlight like your target (subtle, not blur) */}
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_15%,rgba(255,255,255,0.18),transparent_45%)] opacity-70" />
-      {/* Edge pop */}
       <div className="pointer-events-none absolute inset-0 rounded-xl ring-1 ring-white/12" />
     </div>
   );

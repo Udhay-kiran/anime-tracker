@@ -9,7 +9,7 @@ function validateText(text) {
   return typeof text === "string" && text.trim().length >= 5 && text.trim().length <= 2000;
 }
 
-// GET /api/reviews/anime/:animeId
+// Lists reviews for a specific anime.
 async function listReviewsForAnime(req, res) {
   const { animeId } = req.params;
   try {
@@ -34,7 +34,7 @@ async function listReviewsForAnime(req, res) {
   }
 }
 
-// POST /api/reviews/anime/:animeId
+// Creates one review per user per anime.
 async function createReview(req, res) {
   const { animeId } = req.params;
   const { rating, text } = req.body || {};
@@ -65,7 +65,7 @@ async function createReview(req, res) {
   }
 }
 
-// PATCH /api/reviews/:reviewId
+// Updates a review owned by the signed-in user.
 async function updateReview(req, res) {
   const { reviewId } = req.params;
   const { rating, text } = req.body || {};
@@ -94,7 +94,7 @@ async function updateReview(req, res) {
   }
 }
 
-// DELETE /api/reviews/:reviewId
+// Deletes a review owned by the signed-in user.
 async function deleteReview(req, res) {
   const { reviewId } = req.params;
   try {

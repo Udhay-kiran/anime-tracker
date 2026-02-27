@@ -34,8 +34,7 @@ const WATCH_STATUSES = [
   { value: "dropped", label: "Dropped" },
 ];
 
-// Simple fade/slide-in on scroll.
-// Usage: <Reveal><YourBlock/></Reveal>
+// Reusable on-scroll reveal wrapper for content blocks.
 function Reveal({
   children,
   delayMs = 0,
@@ -50,7 +49,7 @@ function Reveal({
     const el = ref.current;
     if (!el) return;
 
-    // If user prefers reduced motion, just show.
+    // Respect reduced-motion users by skipping the animation.
     const prefersReduced =
       typeof window !== "undefined" &&
       window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
@@ -101,7 +100,7 @@ const formatRating = (value?: number | null) => {
 const fallback = (value?: string | number | null) =>
   value === null || value === undefined || value === "" ? "N/A" : value;
 
-// ✅ NEW: fallbacks + safe url helper
+// Fallback assets and URL guards keep image rendering resilient.
 const posterFallback = "/posters/fallback.jpg";
 const bannerFallback = "/banners/fallback.jpg";
 
@@ -442,7 +441,7 @@ export default function AnimePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-zinc-50 via-white to-indigo-50 text-zinc-900">
       <div className="mx-auto max-w-4xl px-6 py-12">
-        {/* Desktop hero/banner */}
+        {/* Desktop hero banner */}
         <section className="hidden md:block relative overflow-hidden rounded-2xl border border-zinc-200 bg-zinc-950 shadow-sm">
           <div className="relative h-[380px] w-full">
             <Image
@@ -514,7 +513,7 @@ export default function AnimePage() {
           </div>
         </section>
 
-        {/* Mobile top section (no banner, fixed poster size) */}
+        {/* Mobile header without banner */}
         <section className="md:hidden overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm">
           <div className="p-4">
             <div className="grid grid-cols-[120px_1fr] gap-3">
@@ -589,7 +588,7 @@ export default function AnimePage() {
             <span className="font-medium">Genres:</span> {anime.genres?.join(", ") || "-"}
           </div>
         </div>
-        {/* MAIN CONTENT */}
+        {/* Detail content */}
         <div className="mt-10 space-y-6">
             <Reveal>
               <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">

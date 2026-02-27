@@ -14,7 +14,7 @@ router.get("/", requireAuth, getWatchlist);
 router.post("/", requireAuth, addWatchlistItem);
 router.patch("/:animeId/status", requireAuth, updateWatchlistStatus);
 router.patch("/:animeId/favorite", requireAuth, updateWatchlistFavorite);
-// Backwards compatibility: legacy route updates status only
+// Legacy clients still PATCH /:animeId for status updates.
 router.patch("/:animeId", requireAuth, updateWatchlistStatus);
 router.delete("/:animeId", requireAuth, deleteWatchlistItem);
 

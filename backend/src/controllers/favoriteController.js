@@ -1,6 +1,6 @@
 const Favorite = require("../models/Favorite");
 
-// GET /api/favorites
+// Returns favorite anime ids for the signed-in user.
 async function listFavorites(req, res) {
   try {
     const favorites = await Favorite.find({ userId: req.user.id }).lean();
@@ -10,7 +10,7 @@ async function listFavorites(req, res) {
   }
 }
 
-// POST /api/favorites/:animeId
+// Adds one anime to favorites (idempotent).
 async function addFavorite(req, res) {
   const { animeId } = req.params;
   if (!animeId) return res.status(400).json({ message: "animeId is required" });
@@ -26,7 +26,7 @@ async function addFavorite(req, res) {
   }
 }
 
-// DELETE /api/favorites/:animeId
+// Removes one anime from favorites.
 async function removeFavorite(req, res) {
   const { animeId } = req.params;
   if (!animeId) return res.status(400).json({ message: "animeId is required" });

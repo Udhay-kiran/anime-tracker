@@ -6,8 +6,8 @@ export function apiBase(): string {
   if (process.env.NODE_ENV !== "production") {
     return "http://localhost:4000";
   }
-  throw new Error("Set NEXT_PUBLIC_API_URL in Vercel → Project Settings → Environment Variables");
+  throw new Error("Set NEXT_PUBLIC_API_URL in Vercel Project Settings Environment Variables");
 }
 
-// Alias for clarity with tasks referring to “getBackendBase”
+// Backward-compatible alias used by older code paths.
 export const getBackendBase = apiBase;

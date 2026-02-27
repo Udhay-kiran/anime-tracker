@@ -53,7 +53,7 @@ app.get("/api/health", (req, res) => {
   res.json({ ok: true, message: "Backend is running." });
 });
 
-// Catch-all 404 (must come after all routes)
+// Keep this last so unmatched API paths return JSON 404.
 app.use((req, res) => {
   res.status(404).json({ error: "Not found" });
 });

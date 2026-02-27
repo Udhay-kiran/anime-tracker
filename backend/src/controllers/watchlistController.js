@@ -36,7 +36,7 @@ function toPayload(doc) {
   };
 }
 
-// GET /api/watchlist
+// Returns the signed-in user's watchlist with embedded anime summary data.
 async function getWatchlist(req, res) {
   try {
     const items = await Watchlist.find({ userId: req.user.id }).populate(
@@ -49,7 +49,7 @@ async function getWatchlist(req, res) {
   }
 }
 
-// POST /api/watchlist
+// Adds an anime to watchlist (or favorite-only entry) for the signed-in user.
 async function addWatchlistItem(req, res) {
   const { animeId, status, favorite = false } = req.body || {};
 
@@ -83,7 +83,7 @@ async function addWatchlistItem(req, res) {
   }
 }
 
-// PATCH /api/watchlist/:animeId/status
+// Updates watch status for an existing watchlist row.
 async function updateWatchlistStatus(req, res) {
   const { status } = req.body || {};
   if (!validateStatus(status)) {
@@ -107,7 +107,7 @@ async function updateWatchlistStatus(req, res) {
   }
 }
 
-// PATCH /api/watchlist/:animeId/favorite
+// Updates favorite flag for an existing watchlist row.
 async function updateWatchlistFavorite(req, res) {
   const { favorite } = req.body || {};
   if (!validateFavorite(favorite)) {
@@ -132,7 +132,7 @@ async function updateWatchlistFavorite(req, res) {
   }
 }
 
-// DELETE /api/watchlist/:animeId
+// Removes an anime from the signed-in user's watchlist.
 async function deleteWatchlistItem(req, res) {
   try {
     const deleted = await Watchlist.findOneAndDelete({

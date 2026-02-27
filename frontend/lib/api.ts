@@ -16,7 +16,7 @@ export function saveToken(token: string | null) {
       localStorage.removeItem(TOKEN_KEY);
     }
   } catch {
-    // Swallow storage errors (e.g., Safari private mode)
+    // Ignore storage failures (for example, private browsing restrictions).
   }
 }
 

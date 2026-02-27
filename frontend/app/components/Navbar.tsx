@@ -114,9 +114,7 @@ export default function Navbar() {
       await apiFetch(apiUrl("/api/auth/logout"), {
         method: "POST",
       });
-    } catch {
-      // ignore
-    } finally {
+    } catch {} finally {
       saveToken(null);
       setUser(null);
       setOpenMenu(null);

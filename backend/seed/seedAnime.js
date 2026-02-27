@@ -9,7 +9,7 @@ async function run() {
   await mongoose.connect(process.env.MONGO_URI);
   console.log("Connected to MongoDB for seeding");
 
-  // reset collection (dev-only)
+  // Seeding starts from a clean collection.
   await Anime.deleteMany({});
   console.log("🧹 Cleared Anime collection");
 

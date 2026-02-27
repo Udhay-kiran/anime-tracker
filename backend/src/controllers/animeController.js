@@ -1,27 +1,27 @@
 const Anime = require("../models/Anime");
 const Watchlist = require("../models/Watchlist");
 
-// GET /api/anime
+// Browse catalog payload.
 async function listAnime(req, res) {
   const animes = await Anime.find().sort({ releaseYear: -1, title: 1 });
   res.json(animes);
 }
 
-// GET /api/anime/:id  (Mongo _id)
+// Single anime lookup by Mongo id.
 async function getAnimeById(req, res) {
   const anime = await Anime.findById(req.params.id);
   if (!anime) return res.status(404).json({ message: "Anime not found" });
   res.json(anime);
 }
 
-// GET /api/anime/slug/:slug
+// Single anime lookup by slug.
 async function getAnimeBySlug(req, res) {
   const anime = await Anime.findOne({ slug: req.params.slug });
   if (!anime) return res.status(404).json({ message: "Anime not found" });
   res.json(anime);
 }
 
-// GET /api/anime/highlights
+// Curated homepage collections.
 async function getAnimeHighlights(req, res) {
   try {
     const [topRated, recent2025, comingSoon, trending] = await Promise.all([
